@@ -1,6 +1,6 @@
 # agent-customer-team
 
-> Phiên bản `0.1.0`, chưa phát hành. Bản tiếng Anh: [README.md](README.md).
+> Phiên bản `0.2.0`, chưa phát hành. Bản tiếng Anh: [README.md](README.md).
 
 ## Đây là gì
 

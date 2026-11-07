@@ -1,6 +1,6 @@
 # agent-customer-team
 
-> Version `0.1.0`, not released. Vietnamese version: [README.vi.md](README.vi.md).
+> Version `0.2.0`, not released. Vietnamese version: [README.vi.md](README.vi.md).
 
 ## What it is
 

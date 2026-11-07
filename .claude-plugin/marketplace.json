@@ -8,7 +8,7 @@
     {
       "name": "agent-customer-team",
       "description": "Offline customer-support prototype: triages a synthetic support case from three local JSON files and returns an exact grounded draft or a pending human handoff. No sending, network, LLM or CRM; not production-ready.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "source": "./",
       "license": "MIT",
       "author": {
