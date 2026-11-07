@@ -27,9 +27,15 @@ def block(kind: str) -> str:
     return match.group(1)
 
 
+PS_QUOTES = "'\u2018\u2019\u201a\u201b"
+
+
 def quote(kind: str, value: str) -> str:
     """Single-quote a path the way SKILL.md says: bash '\\'' and PowerShell ''."""
-    inner = value.replace("'", "'\\''") if kind == "bash" else value.replace("'", "''")
+    if kind == "bash":
+        inner = value.replace("'", "'\\''")
+    else:  # PowerShell treats ' and the curly quotes U+2018-U+201B alike; each is doubled
+        inner = "".join(c + c if c in PS_QUOTES else c for c in value)
     return f"'{inner}'"
 
 
@@ -127,6 +133,23 @@ def test_quote_helper_follows_the_text_in_skill_md():
     assert quote("bash", "a'b") == "'a'\\''b'"
     assert quote("powershell", "a'b") == "'a''b'"
     assert quote("bash", "plain") == "'plain'"
+    assert quote("powershell", "Bob\u2019s") == "'Bob\u2019\u2019s'"
+    assert quote("powershell", "\u2018\u201a\u201b") == "'\u2018\u2018\u201a\u201a\u201b\u201b'"
+
+
+def test_powershell_command_survives_curly_quotes_in_a_path(tmp_path):
+    """A lone U+2019 would end a PowerShell single-quoted string and run what follows."""
+    shell_or_skip("powershell")
+    odd = tmp_path / "Bob\u2019s \u2018x\u2019; Write-Output INJECTED; \u2019"
+    odd.mkdir()
+    for name in ("context.json", "payload.json", "knowledge.json"):
+        shutil.copyfile(FIXTURES / name, odd / name)
+    work = tmp_path / "work"
+    work.mkdir()
+    done = run_block("powershell", paths_for(odd), work)
+    assert done.returncode == 0, f"exit {done.returncode}: {done.stderr[-400:]!r}"
+    assert b"INJECTED" not in done.stdout
+    assert stdout_bytes("powershell", done) == (GOLDEN / "draft.json").read_bytes()
 
 
 def test_ci_runs_at_least_one_variant_on_every_os():

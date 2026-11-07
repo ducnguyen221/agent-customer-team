@@ -7,8 +7,8 @@ from agent_customer_team import cli
 from agent_customer_team.cli import _emit, _escape_unsafe, main
 from case_helpers import CTX, D, P, doc
 
-SC1 = ["\u0085", "\u009b", "​", "‍", "‮", "⁦", " ", " ", "﻿", "\x1b", "\x7f",
-       "\U000e0001", "͸"]  # last two: Cf outside BMP, Cn inside BMP
+SC1 = ["\u0085", "\u009b", "\u200b", "\u200d", "\u202e", "\u2066", "\u2028", "\u2029", "\ufeff", "\x1b", "\x7f",
+       "\U000e0001", "\u0378"]  # last two: Cf outside BMP, Cn inside BMP
 
 
 def raw_bytes(ch):

@@ -41,7 +41,7 @@ GitHub Actions chạy bộ test trên Ubuntu, macOS và Windows với Python 3.1
 |---|---|
 | `src/agent_customer_team/` | công cụ ngoại tuyến (chỉ thư viện chuẩn) |
 | `skills/customer-support-offline/` | skill bọc công cụ |
-| `evals/` | ca thử kích hoạt skill (chưa chạy) |
+| `evals/` | ca thử kích hoạt skill; bộ ca cho `claude plugin eval` (chạy 07/11/2026: 12/12 lượt đúng kỳ vọng) |
 | `tests/` | test đơn vị, khoá runtime, cổng đóng gói và tài liệu |
 | `.claude-plugin/`, `.codex-plugin/`, `plugin.json` | manifest plugin |
 | `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` | luật của repo |

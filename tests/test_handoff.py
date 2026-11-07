@@ -10,7 +10,7 @@ from case_helpers import CTX, D, P, doc
 
 OLD_KEYS = {"status", "ownership", "proposed_owner", "reason", "summary", "next_action"}
 NEW_KEYS = {"case_id", "topic", "intent", "message", "attempted_steps", "evidence"}
-SC1 = "\u0085\u009b​‍‮⁦  ﻿\x7f"
+SC1 = "\u0085\u009b\u200b\u200d\u202e\u2066\u2028\u2029\ufeff\x7f"
 
 
 def run(context=CTX, payload=P, docs=(D,)):
@@ -94,7 +94,7 @@ def test_inputs_are_not_mutated():
 
 
 def test_cli_stdout_has_no_raw_unsafe_bytes_in_handoff(tmp_path, capsysbinary):
-    locator = "g‍1"  # Cf is allowed by the document contract, Cc is not
+    locator = "g\u200d1"  # Cf is allowed by the document contract, Cc is not
     payload = dict(P, message="m" + SC1, attempted_steps=["s" + SC1, "t"])
     documents = [doc(locator=locator), doc(id="b", answer="Khác", locator="guide-2")]
     paths = []

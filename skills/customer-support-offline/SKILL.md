@@ -26,7 +26,7 @@ skill của host), gốc plugin là thư mục **hai cấp trên** thư mục sk
 không có thì dừng, báo "không tìm thấy mã CLI của plugin", không đoán đường khác.
 
 Gán đường vào biến bằng **nháy đơn** rồi mới chạy; không dán đường thẳng vào trong lệnh hay trong nháy kép (đường có
-`$`, dấu nháy hay khoảng trắng sẽ bị shell hiểu sai). Dấu nháy đơn trong đường: bash viết `'\''`, PowerShell viết `''`.
+`$`, dấu nháy hay khoảng trắng sẽ bị shell hiểu sai). Dấu nháy đơn trong đường: bash viết `'\''`; PowerShell viết `''`, và viết đôi cả mọi nháy cong `‘ ’ ‚ ‛` (ví dụ `’` viết `’’`) vì PowerShell coi chúng cũng là nháy đơn — để lẻ thì chuỗi bị cắt.
 
 ```bash
 PLUGIN_ROOT='<gốc plugin>'

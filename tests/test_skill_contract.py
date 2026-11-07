@@ -185,6 +185,8 @@ def test_quote_escape_is_given_for_both_shells():
     command = read_skill().split("## Lệnh")[1].split("## Đọc kết quả")[0]
     assert "bash viết `'\\''`" in command
     assert "PowerShell viết `''`" in command
+    assert "`\u2018 \u2019 \u201a \u201b`" in command, "PowerShell curly quotes must be named"
+    assert "`\u2019` viết `\u2019\u2019`" in command
     assert "dấu nháy đơn trong đường viết `'\\''`)" not in command, "the bash-only sentence must be replaced"
 
 
