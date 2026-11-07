@@ -20,3 +20,4 @@ oauth_creds.json
 .tmp/
 .claude/
 evals/results/
+evals-behavior/results/
