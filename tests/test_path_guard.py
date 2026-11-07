@@ -1,12 +1,14 @@
 """Lexical path guard: NT object prefixes and Windows device names are refused."""
 import json
+from pathlib import Path
+
 import pytest
-from agent_customer_team.cli import _load, main
+from agent_customer_team.cli import _load, _unsafe_path, main
 
 BS = "\\"
 
 
-@pytest.mark.parametrize("path", [
+REFUSED = [
     BS + "??" + BS + "C:" + BS + "Windows" + BS + "win.ini",
     "//??/C:/Windows/win.ini", "/??/C:/x.json",
     BS * 2 + "server" + BS + "share" + BS + "x.json", "//server/share/x.json",
@@ -14,8 +16,20 @@ BS = "\\"
     "CON", "con", "NUL", "nul.json", "PRN", "AUX", "COM1", "com9.txt", "LPT1", "lpt9",
     "dir" + BS + "CON", "dir/aux.json", "C:" + BS + "data" + BS + "NUL.json",
     "CON.", "CON ", "CON:", "CONIN$", "CONOUT$",
-])
-def test_refused_paths_raise_oserror(path):
+]
+
+
+@pytest.mark.parametrize("path", REFUSED)
+def test_refused_paths_are_flagged(path):
+    assert _unsafe_path(path) is True
+
+
+@pytest.mark.parametrize("path", REFUSED)
+def test_refused_paths_raise_oserror(path, monkeypatch):
+    def opened(self, *args, **kwargs):
+        raise AssertionError("open reached")
+
+    monkeypatch.setattr(Path, "open", opened)
     with pytest.raises(OSError):
         _load(path)
 
@@ -35,4 +49,9 @@ def test_nt_prefix_returns_read_error_exit(capsysbinary):
 
 def test_device_name_returns_read_error_exit(capsysbinary):
     assert main(["--context", "NUL", "--payload", "x", "--knowledge", "y"]) == 3
+    assert json.loads(capsysbinary.readouterr().out) == {"error": {"code": "read_error"}}
+
+
+def test_nul_byte_path_returns_read_error_exit(capsysbinary):
+    assert main(["--context", "a\x00b.json", "--payload", "x", "--knowledge", "y"]) == 3
     assert json.loads(capsysbinary.readouterr().out) == {"error": {"code": "read_error"}}
