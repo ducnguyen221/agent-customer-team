@@ -1,6 +1,7 @@
 """Offline CLI with bounded input and non-echoing errors."""
 import json
 import sys
+import unicodedata
 from pathlib import Path
 from .workflow import run_case
 
@@ -48,8 +49,27 @@ def _load(path: str) -> object:
     return json.loads(raw.decode("utf-8"), object_pairs_hook=_unique, parse_constant=_constant, parse_int=_JsonInteger)
 
 
+_UNSAFE = {"Cc", "Cf", "Zl", "Zp", "Cs", "Cn"}
+
+
+def _escape_unsafe(text: str) -> str:
+    """Replace control, format, separator, surrogate and unassigned characters with JSON escapes."""
+    out = []
+    for char in text:
+        code = ord(char)
+        if unicodedata.category(char) not in _UNSAFE:
+            out.append(char)
+        elif code > 0xFFFF:
+            code -= 0x10000
+            out.append("\\u%04x\\u%04x" % (0xD800 + (code >> 10), 0xDC00 + (code & 0x3FF)))
+        else:
+            out.append("\\u%04x" % code)
+    return "".join(out)
+
+
 def _emit(value: dict) -> None:
-    encoded = (json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False) + "\n").encode("utf-8")
+    dumped = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    encoded = (_escape_unsafe(dumped) + "\n").encode("utf-8")
     sys.stdout.buffer.write(encoded)
 
 
