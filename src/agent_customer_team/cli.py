@@ -28,6 +28,7 @@ class _JsonInteger:
 
 _DEVICES = {"CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$", "CLOCK$"}
 _DEVICES |= {"COM%d" % n for n in range(1, 10)} | {"LPT%d" % n for n in range(1, 10)}
+_DEVICES |= {name + digit for name in ("COM", "LPT") for digit in map(chr, (0xB9, 0xB2, 0xB3))}
 
 
 def _unsafe_path(path: str) -> bool:
@@ -35,8 +36,8 @@ def _unsafe_path(path: str) -> bool:
     normal = path.replace("\\", "/")
     if "\x00" in path or normal.startswith(("//", "/??/")):
         return True
-    return any(part.split(":")[0].split(".")[0].rstrip(" ").upper() in _DEVICES
-               for part in normal.split("/"))
+    return any(segment.split(".")[0].rstrip(" ").upper() in _DEVICES
+               for part in normal.split("/") for segment in part.split(":"))
 
 
 def _load(path: str) -> object:
