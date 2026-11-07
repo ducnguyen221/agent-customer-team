@@ -99,10 +99,12 @@ def test_link_checker_catches_a_broken_link(tmp_path):
 
 
 def test_cli_commands_in_install_ignore_cwd():
-    forms = re.findall(r"python3? -B[^\n]*agent_customer_team\.cli[^\n]*", read("INSTALL.md"))
-    assert forms, "INSTALL.md must show the CLI command"
-    for form in forms:
-        assert " -B -P -m " in form, f"missing -B -P: {form}"
+    assert re.search(r"-m agent_customer_team\.cli", read("INSTALL.md")), "INSTALL.md must show the CLI command"
+    skills = [p.relative_to(ROOT).as_posix() for p in sorted(ROOT.glob("skills/*/SKILL.md"))]
+    for rel in [*USER_DOCS, *skills]:
+        for line in read(rel).splitlines():
+            if "-m agent_customer_team.cli" in line:
+                assert " -B -P -m agent_customer_team.cli" in line, f"{rel}: missing -B -P: {line.strip()[:80]}"
 
 
 def test_install_check_has_bash_and_powershell_forms():

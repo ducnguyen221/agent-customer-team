@@ -1,19 +1,19 @@
 # Local synthetic case
 
-Python 3.11 or newer is required; runtime uses only the standard library. From the repository root set the package path, then run the CLI:
+Python 3.11 or newer is required; runtime uses only the standard library. From the repository root set the package path, then run the CLI (`-P` keeps the current directory off the import path, so a look-alike package there cannot replace the tool):
 
 PowerShell:
 
 ```powershell
 $env:PYTHONPATH = Join-Path (Get-Location).Path 'src'
-python -B -m agent_customer_team.cli --context tests/fixtures/context.json --payload tests/fixtures/payload.json --knowledge tests/fixtures/knowledge.json
+python -B -P -m agent_customer_team.cli --context tests/fixtures/context.json --payload tests/fixtures/payload.json --knowledge tests/fixtures/knowledge.json
 ```
 
 POSIX shell:
 
 ```sh
 export PYTHONPATH="$(pwd)/src"
-python -B -m agent_customer_team.cli --context tests/fixtures/context.json --payload tests/fixtures/payload.json --knowledge tests/fixtures/knowledge.json
+python -B -P -m agent_customer_team.cli --context tests/fixtures/context.json --payload tests/fixtures/payload.json --knowledge tests/fixtures/knowledge.json
 ```
 
 To run the tests, use `python -m pytest` from the repository root; `pyproject.toml` puts `src` on the path, so no `PYTHONPATH` is needed. With pytest-cov also available, add `--cov --cov-report=term-missing` (set `COVERAGE_FILE` to a path outside the tree so no `.coverage` file lands in the repository).
