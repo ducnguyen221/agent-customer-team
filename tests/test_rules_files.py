@@ -1,4 +1,4 @@
-"""Shape of the three repository rule files. Content is reviewed by people; this only pins structure."""
+"""Shape of the repository rule files. Content is reviewed by people; this only pins structure."""
 import re
 from pathlib import Path
 
@@ -10,8 +10,9 @@ def read(name: str) -> str:
     return (ROOT / name).read_text(encoding="utf-8")
 
 
-def test_claude_md_only_imports_agents():
-    assert read("CLAUDE.md").strip() == "@AGENTS.md"
+def test_no_root_claude_md():
+    """RQ-012: no CLAUDE.md at the root so `claude plugin validate --strict` passes; rules live in AGENTS.md."""
+    assert not (ROOT / "CLAUDE.md").exists()
 
 
 def test_gemini_md_is_prose_pointer():

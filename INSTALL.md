@@ -63,8 +63,10 @@ Chi tiết lệnh ở trang của host; ở đây chỉ nêu điểm khác nhau.
 - **4c. Antigravity:** liên kết **một** thư mục `skills/customer-support-offline/` vào thư mục skill của Antigravity,
   không chép, không ghi đè tên trùng — [`hosts/antigravity/README.md`](hosts/antigravity/README.md).
 
-Repo có `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` ở gốc: phiên mở trong thư mục repo tự nạp luật. Plugin không đòi sửa file
-luật cấp người dùng của harness.
+Luật của repo nằm ở `AGENTS.md` (và `GEMINI.md` cho Antigravity). Codex và Antigravity tự nạp khi phiên mở trong thư mục
+repo. Claude Code **không** tự nạp: repo cố ý không có `CLAUDE.md` để `claude plugin validate --strict` xanh. Muốn phiên
+Claude theo luật repo thì trỏ nó đọc `AGENTS.md` — ví dụ thêm một dòng `@AGENTS.md` vào `CLAUDE.md` của chính bạn (cấp dự
+án hay cấp người dùng), hoặc dặn phiên đọc `AGENTS.md` trước khi làm. Plugin không đòi sửa file luật cấp người dùng.
 
 ## 5. Kiểm
 

@@ -109,7 +109,7 @@ def test_scanner_sees_the_repo():
     for must in ("README.md", "pyproject.toml", ".gitignore", "LICENSE",
                  "skills/customer-support-offline/SKILL.md", "hosts/codex/README.md",
                  ".claude-plugin/plugin.json", ".claude-plugin/marketplace.json", ".codex-plugin/plugin.json",
-                 "plugin.json", "evals/customer-support-offline/cases.json", "AGENTS.md", "CLAUDE.md",
+                 "plugin.json", "evals/customer-support-offline/cases.json", "AGENTS.md",
                  "GEMINI.md", "CHANGELOG.md", "INSTALL.md", "ECOSYSTEM.md", "README.vi.md"):
         assert must in seen, f"gate does not see {must}"
 

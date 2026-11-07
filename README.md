@@ -45,5 +45,5 @@ GitHub Actions runs the suite on Ubuntu, macOS and Windows with Python 3.11, 3.1
 | `evals/` | trigger cases for the skill; activation suite for `claude plugin eval` (run 07/11/2026: 12/12 runs as expected) |
 | `tests/` | unit tests, runtime lock, packaging and documentation gates |
 | `.claude-plugin/`, `.codex-plugin/`, `plugin.json` | plugin manifests |
-| `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` | repository rules |
+| `AGENTS.md`, `GEMINI.md` | repository rules (no `CLAUDE.md` by design: point a Claude Code session at `AGENTS.md`, see `INSTALL.md`) |
 | `hosts/`, `INSTALL.md` | install guides |

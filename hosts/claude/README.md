@@ -5,8 +5,9 @@
 
 ## 1. Luật
 
-Phiên mở trong thư mục repo: `CLAUDE.md` của repo là đúng một dòng `@AGENTS.md`, nên luật được nạp. Không cần sửa
-`~/.claude/CLAUDE.md`.
+Repo cố ý **không** có `CLAUDE.md` (để `claude plugin validate --strict` xanh), nên phiên Claude Code mở trong thư mục repo
+**không** tự nạp luật. Luật nằm ở `AGENTS.md`: thêm một dòng `@AGENTS.md` vào `CLAUDE.md` của bạn (cấp dự án hay cấp người
+dùng), hoặc dặn phiên đọc `AGENTS.md` trước khi làm. Skill của plugin chạy được mà không cần bước này.
 
 ## 2. Cài plugin
 
