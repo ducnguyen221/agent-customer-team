@@ -15,6 +15,15 @@ def test_no_root_claude_md():
     assert not (ROOT / "CLAUDE.md").exists()
 
 
+def test_claude_guidance_gives_a_working_import():
+    """Imports resolve from the importing file, so the docs must show `.claude/CLAUDE.md` with `@../AGENTS.md`."""
+    for name in ("INSTALL.md", "hosts/claude/README.md", "hosts/README.md"):
+        text = read(name)
+        assert "`@../AGENTS.md`" in text, name
+        assert "**không** tự nạp" not in text and "không tự nạp" not in text, name
+        assert "(cấp dự án hay cấp người dùng)" not in text, name
+
+
 def test_gemini_md_is_prose_pointer():
     lines = read("GEMINI.md").splitlines()
     assert not [line for line in lines if line.startswith("@")]

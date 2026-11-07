@@ -140,7 +140,7 @@ def test_quote_helper_follows_the_text_in_skill_md():
 def test_powershell_command_survives_curly_quotes_in_a_path(tmp_path):
     """A lone U+2019 would end a PowerShell single-quoted string and run what follows."""
     shell_or_skip("powershell")
-    odd = tmp_path / "Bob\u2019s \u2018x\u2019; Write-Output INJECTED; \u2019"
+    odd = tmp_path / "x\u2019; Write-Output INJECTED; \u2019"  # unescaped, INJECTED would run
     odd.mkdir()
     for name in ("context.json", "payload.json", "knowledge.json"):
         shutil.copyfile(FIXTURES / name, odd / name)

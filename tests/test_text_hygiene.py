@@ -4,7 +4,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SUFFIXES = {".py", ".md", ".json", ".yml", ".yaml", ".toml", ".txt", ".in"}
-SKIP = {".git", ".venv", ".tmp", "__pycache__", ".pytest_cache", "results"}
+NAMES = {"LICENSE", ".gitignore", ".gitattributes"}
+SKIP = {".git", ".claude", ".venv", ".tmp", "__pycache__", ".pytest_cache", "results"}
 
 
 def hidden(char: str) -> bool:
@@ -14,7 +15,7 @@ def hidden(char: str) -> bool:
 
 def text_files():
     for path in sorted(ROOT.rglob("*")):
-        if path.is_file() and path.suffix in SUFFIXES and not SKIP.intersection(path.relative_to(ROOT).parts):
+        if path.is_file() and (path.suffix in SUFFIXES or path.name in NAMES) and not SKIP.intersection(path.relative_to(ROOT).parts):
             yield path
 
 

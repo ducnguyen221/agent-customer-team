@@ -22,7 +22,7 @@ CRM · gọi mạng hay LLM · bảo đảm production. Đề nghị người d�
 
 Tìm gốc plugin: lấy **đường thật** của `SKILL.md` (đi theo junction hay symlink nếu skill được liên kết vào thư mục
 skill của host), gốc plugin là thư mục **hai cấp trên** thư mục skill. PowerShell: nếu thư mục skill là junction thì
-`@((Get-Item <thư mục skill>).Target)[0]`; bash: `realpath` hoặc `readlink -f`. Nếu `<gốc>/src/agent_customer_team`
+`@((Get-Item -LiteralPath '<thư mục skill>').Target)[0]`; bash: `realpath` hoặc `readlink -f`. Nếu `<gốc>/src/agent_customer_team`
 không có thì dừng, báo "không tìm thấy mã CLI của plugin", không đoán đường khác.
 
 Gán đường vào biến bằng **nháy đơn** rồi mới chạy; không dán đường thẳng vào trong lệnh hay trong nháy kép (đường có

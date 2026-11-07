@@ -42,8 +42,8 @@ GitHub Actions runs the suite on Ubuntu, macOS and Windows with Python 3.11, 3.1
 |---|---|
 | `src/agent_customer_team/` | the offline tool (standard library only) |
 | `skills/customer-support-offline/` | the skill that wraps the tool |
-| `evals/` | trigger cases for the skill; activation suite for `claude plugin eval` (run 07/11/2026: 12/12 runs as expected) |
+| `evals/` | trigger cases for the skill; activation suite for `claude plugin eval` |
 | `tests/` | unit tests, runtime lock, packaging and documentation gates |
 | `.claude-plugin/`, `.codex-plugin/`, `plugin.json` | plugin manifests |
-| `AGENTS.md`, `GEMINI.md` | repository rules (no `CLAUDE.md` by design: point a Claude Code session at `AGENTS.md`, see `INSTALL.md`) |
+| `AGENTS.md`, `GEMINI.md` | repository rules (no `CLAUDE.md` by design; Claude Code reads `AGENTS.md` only under conditions, so `INSTALL.md` shows a `.claude/CLAUDE.md` with `@../AGENTS.md`) |
 | `hosts/`, `INSTALL.md` | install guides |

@@ -1,14 +1,14 @@
 # hosts/ — cài và nạp theo từng harness
 
 > **Kết luận:** luật của repo nằm ở một chỗ duy nhất — [`AGENTS.md`](../AGENTS.md) — và mỗi harness nạp nó theo cách
-> riêng; skill duy nhất là `skills/customer-support-offline/`. Plugin không đòi sửa file luật cấp người dùng của harness.
+> riêng (Claude Code cần một bước trỏ chắc chắn, xem bảng); skill duy nhất là `skills/customer-support-offline/`. Plugin không đòi sửa file luật cấp người dùng của harness.
 > Trong các trang này `<plugin-root>` là thư mục gốc của bản checkout repo.
 
 ## Chọn harness
 
 | Bạn chạy trong | Luật nạp bằng | Skill nạp bằng | Hướng dẫn |
 |---|---|---|---|
-| Claude Code (terminal, IDE, tab Code của ứng dụng Claude) | **không tự nạp** — repo không có `CLAUDE.md`; trỏ phiên đọc `AGENTS.md` (ví dụ `@AGENTS.md` trong `CLAUDE.md` của bạn) | plugin `.claude-plugin/` | [claude/README.md](claude/README.md) |
+| Claude Code (terminal, IDE, tab Code của ứng dụng Claude) | repo không có `CLAUDE.md`; bản ≥ 2.1.277 có thể tự đọc `AGENTS.md` khi cây thư mục không có `CLAUDE.md` nào — chắc chắn nhất là `.claude/CLAUDE.md` chứa `@../AGENTS.md` | plugin `.claude-plugin/` | [claude/README.md](claude/README.md) |
 | Codex (CLI hoặc ứng dụng desktop) | tự đọc `AGENTS.md` theo chuỗi thư mục | plugin `.codex-plugin/` | [codex/README.md](codex/README.md) |
 | Google Antigravity | tự đọc `AGENTS.md` và `GEMINI.md` của workspace | liên kết thư mục skill vào thư mục skill của Antigravity | [antigravity/README.md](antigravity/README.md) |
 | Claude Desktop, tab chat | **chưa hỗ trợ** | — | [claude-desktop/README.md](claude-desktop/README.md) |

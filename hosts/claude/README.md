@@ -5,9 +5,12 @@
 
 ## 1. Luật
 
-Repo cố ý **không** có `CLAUDE.md` (để `claude plugin validate --strict` xanh), nên phiên Claude Code mở trong thư mục repo
-**không** tự nạp luật. Luật nằm ở `AGENTS.md`: thêm một dòng `@AGENTS.md` vào `CLAUDE.md` của bạn (cấp dự án hay cấp người
-dùng), hoặc dặn phiên đọc `AGENTS.md` trước khi làm. Skill của plugin chạy được mà không cần bước này.
+Luật nằm ở `AGENTS.md`; repo cố ý **không** có `CLAUDE.md` (để `claude plugin validate --strict` xanh). Claude Code từ bản
+2.1.277 có thể tự đọc `AGENTS.md`, nhưng chỉ khi thư mục làm việc và mọi thư mục cha đều không có `CLAUDE.md`,
+`.claude/CLAUDE.md` hay `CLAUDE.local.md`, và thiết lập *Project instructions* cho phép. Cách chắc chắn: tạo
+`.claude/CLAUDE.md` trong bản checkout chứa đúng một dòng `@../AGENTS.md` (đường tương đối tính từ file chứa dòng `@`), hoặc
+dùng đường tuyệt đối tới `AGENTS.md` trong `CLAUDE.md` bạn đang dùng. Đừng tạo lại `CLAUDE.md` ở gốc repo. Skill của plugin
+chạy được mà không cần bước này.
 
 ## 2. Cài plugin
 
