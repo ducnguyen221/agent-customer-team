@@ -14,7 +14,7 @@ Claude Code, Codex và Antigravity. Chi tiết công cụ: [hướng dẫn ngo�
 - Chỉ dữ liệu tổng hợp; không dùng dữ liệu khách thật.
 - Không mạng, không LLM, không CRM, không gửi tin; nháp không bao giờ được gửi và gói chuyển không bao giờ được nhận.
 - Chưa sẵn sàng production: không bảo đảm riêng tư hay phân quyền tenant ở mức production.
-- Giấy phép chưa chọn: plugin khai `UNLICENSED` (giữ mọi quyền) cho tới khi chủ sở hữu quyết.
+- Giấy phép: MIT (xem `LICENSE`).
 
 Cần Python 3.11 trở lên; phần chạy chỉ dùng thư viện chuẩn.
 

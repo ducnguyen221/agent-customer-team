@@ -69,9 +69,9 @@ def test_install_prompt_short():
 
 def test_readmes_state_limits():
     en, vi = read("README.md"), read("README.vi.md")
-    for word in ("synthetic", "production", "UNLICENSED"):
+    for word in ("synthetic", "production", "MIT"):
         assert word in en, f"README.md lacks {word!r}"
-    for word in ("tổng hợp", "production", "UNLICENSED"):
+    for word in ("tổng hợp", "production", "MIT"):
         assert word in vi, f"README.vi.md lacks {word!r}"
     assert "README.vi.md" in en and "README.md" in vi, "the two READMEs must link each other"
 

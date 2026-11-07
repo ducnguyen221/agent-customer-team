@@ -50,7 +50,8 @@ def test_manifest_specific_fields():
 
 def test_license_file_matches_manifest():
     first = (ROOT / "LICENSE").read_text(encoding="utf-8").splitlines()[0].strip()
-    assert first == load("plugin.json")["license"] == "UNLICENSED"
+    assert first == "MIT License"
+    assert load("plugin.json")["license"] == "MIT"
 
 
 def frontmatter(text: str) -> dict:

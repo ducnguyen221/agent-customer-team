@@ -43,7 +43,9 @@ PATTERNS = {
 
 # (relative path, key) -> number of matches tolerated. Starts empty: add an entry only for an
 # approved credit line and write the reason beside it.
-EXEMPT: dict[tuple[str, str], int] = {}
+EXEMPT: dict[tuple[str, str], int] = {
+    ("LICENSE", "ten-nguoi"): 1,  # dòng Copyright của giấy phép MIT — Đức chọn MIT 2026-11-07
+}
 
 
 def distributable_files(root: Path) -> list[Path]:

@@ -14,7 +14,7 @@ Code, Codex and Antigravity. Details of the tool: [offline guide](docs/offline-g
 - Synthetic data only; no real customer data.
 - No network, LLM, CRM or sending of any message; a draft is never sent and a handoff is never accepted.
 - Not production-ready: no production privacy or tenant authorization guarantee.
-- License not chosen: the plugin declares `UNLICENSED` (all rights reserved) until the owner decides.
+- License: MIT (see `LICENSE`).
 
 Python 3.11 or newer is required; the runtime uses only the standard library.
 
