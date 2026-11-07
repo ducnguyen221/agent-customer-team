@@ -12,11 +12,13 @@ ROOT = Path(__file__).resolve().parent.parent
 SELF = "tests/test_no_identity_leak.py"
 # Any entry (file or directory) with one of these names is skipped, at every depth.
 SKIP_DIRS = {".git", ".venv", "venv", "__pycache__", ".pytest_cache", ".tmp", "build", "dist",
-             "htmlcov", ".claude"}
+             "htmlcov", ".claude", ".coverage", ".DS_Store"}
+# Files whose name starts with one of these are skipped too (coverage writes .coverage.<host>.<pid>.<rand>).
+SKIP_PREFIXES = (".coverage.",)
 # Files with no extension (LICENSE, .gitignore, ...) are always scanned as text.
 TEXT_EXT = {".py", ".md", ".json", ".toml", ".yml", ".yaml", ".txt", ".cfg", ".ini", ".sh",
             ".ps1", ".html", ".css", ".js", ".svg", ".example", ".gitignore",
-            ".gitattributes", ""}
+            ".gitattributes", ".csv", ".tsv", ".jsonl", ".xml", ".cmd", ".bat", ".psm1", ".log", ""}
 
 
 def s(*codes):
@@ -31,7 +33,8 @@ PATTERNS = {
     "tac-gia": re.escape(s(100, 117, 99, 110, 103, 117, 121, 101, 110)) + "|" +
                re.escape(s(100, 117, 99, 32, 110, 103, 117, 121, 101, 110)),
     "mien": re.escape(s(100, 117, 99, 110, 103, 117, 121, 101, 110, 46, 118, 110)),
-    "duong-may-win": re.escape(s(67, 58, 92, 85, 115, 101, 114, 115, 92)),
+    # drive C + Users with one or more backslashes or slashes (JSON-escaped and slash forms included)
+    "duong-may-win": re.escape(s(67, 58)) + r"[\\/]+" + re.escape(s(85, 115, 101, 114, 115)) + r"[\\/]+",
     "duong-may-env": re.escape(s(37, 85, 83, 69, 82, 80, 82, 79, 70, 73, 76, 69, 37)),
     "email": r"[\w.+-]+@[\w-]+(?:\.[\w-]+)*\.[A-Za-z]{2,}",
     "duong-may-mac": re.escape(s(47, 85, 115, 101, 114, 115, 47)) + r"[A-Za-z][\w.-]*/",
@@ -49,7 +52,7 @@ def distributable_files(root: Path) -> list[Path]:
     for base, dirs, files in os.walk(root):
         dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
         for name in files:
-            if name in SKIP_DIRS:
+            if name in SKIP_DIRS or name.startswith(SKIP_PREFIXES):
                 continue
             path = Path(base) / name
             if path.suffix.lower() in TEXT_EXT or name == "LICENSE":
@@ -102,7 +105,10 @@ def test_skip_dirs_ignored(tmp_path):
 def test_scanner_sees_the_repo():
     seen = {p.relative_to(ROOT).as_posix() for p in distributable_files(ROOT)}
     for must in ("README.md", "pyproject.toml", ".gitignore", "LICENSE",
-                 "skills/customer-support-offline/SKILL.md", "hosts/codex/README.md"):
+                 "skills/customer-support-offline/SKILL.md", "hosts/codex/README.md",
+                 ".claude-plugin/plugin.json", ".claude-plugin/marketplace.json", ".codex-plugin/plugin.json",
+                 "plugin.json", "evals/customer-support-offline/cases.json", "AGENTS.md", "CLAUDE.md",
+                 "GEMINI.md", "CHANGELOG.md", "INSTALL.md", "ECOSYSTEM.md", "README.vi.md"):
         assert must in seen, f"gate does not see {must}"
 
 
@@ -131,3 +137,31 @@ def test_patterns_catch_their_target():
 def test_undecodable_file_is_reported(tmp_path):
     (tmp_path / "bad.md").write_bytes(b"\xff\xfe\x00bad")
     assert scan(tmp_path) == ["bad.md: khong-doc-duoc"]
+
+
+def test_windows_path_in_escaped_and_slash_forms_is_caught(tmp_path):
+    samples = [
+        s(67, 58, 92, 92, 85, 115, 101, 114, 115, 92, 92) + "x",       # JSON-escaped backslashes
+        s(67, 58, 47, 85, 115, 101, 114, 115, 47) + "x",               # forward slashes
+        s(99, 58, 92, 92, 92, 92, 117, 115, 101, 114, 115, 47) + "x",  # lower case, doubled escape, mixed
+    ]
+    for n, text in enumerate(samples):
+        (tmp_path / f"f{n}.json").write_text(text, encoding="utf-8")
+    assert scan(tmp_path) == [f"f{n}.json: duong-may-win x1" for n in range(3)]
+
+
+def test_extra_text_formats_are_scanned(tmp_path):
+    leak = s(67, 58, 92, 85, 115, 101, 114, 115, 92) + "x"
+    names = ["a.csv", "a.tsv", "a.jsonl", "a.xml", "a.cmd", "a.bat", "a.psm1", "a.log", "a.yaml"]
+    for name in names:
+        (tmp_path / name).write_text(leak, encoding="utf-8")
+    assert [line.split(":")[0] for line in scan(tmp_path)] == sorted(names)
+
+
+def test_coverage_and_os_litter_are_not_scanned(tmp_path):
+    (tmp_path / ".coverage").write_bytes(b"SQLite format 3\x00\xff\xfe")
+    (tmp_path / ".coverage.host.1234.x").write_bytes(b"\xff\xfe\x00")
+    (tmp_path / ".DS_Store").write_bytes(b"\x00\x00\x00\x01Bud1\xff")
+    (tmp_path / "keep.md").write_text("clean\n", encoding="utf-8")
+    assert [p.name for p in distributable_files(tmp_path)] == ["keep.md"]
+    assert scan(tmp_path) == []
