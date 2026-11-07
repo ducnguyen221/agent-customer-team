@@ -21,3 +21,5 @@ oauth_creds.json
 .claude/
 evals/results/
 evals-behavior/results/
+evals-scrub/results/
+.github/eval/node_modules/

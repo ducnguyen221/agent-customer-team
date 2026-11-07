@@ -35,6 +35,8 @@ python -m pytest
 No environment variable is needed; `pyproject.toml` puts `src` on the path. `pytest-cov` is optional, for coverage; when you use it, point `COVERAGE_FILE` at a path outside the tree so no `.coverage` file lands in the repository.
 
 GitHub Actions runs the suite on Ubuntu, macOS and Windows with Python 3.11, 3.12 and 3.13 (`.github/workflows/ci.yml`).
+A separate behavior eval, started by hand or by a pull-request label, grades the skill with Bash in a sandbox
+(`.github/workflows/eval-behavior.yml`, see `evals-behavior/README.md`).
 
 ## Layout
 
@@ -43,6 +45,7 @@ GitHub Actions runs the suite on Ubuntu, macOS and Windows with Python 3.11, 3.1
 | `src/agent_customer_team/` | the offline tool (standard library only) |
 | `skills/customer-support-offline/` | the skill that wraps the tool |
 | `evals/` | trigger cases for the skill; activation suite for `claude plugin eval` |
+| `evals-behavior/`, `evals-scrub/` | behavior suite (Bash granted, Linux or macOS) and its credential-scrub canary |
 | `tests/` | unit tests, runtime lock, packaging and documentation gates |
 | `.claude-plugin/`, `.codex-plugin/`, `plugin.json` | plugin manifests |
 | `AGENTS.md`, `GEMINI.md` | repository rules (no `CLAUDE.md` by design; for Claude Code the one recommended way is a `.claude/CLAUDE.md` containing `@../AGENTS.md`, with conditions and warnings in `INSTALL.md`) |
