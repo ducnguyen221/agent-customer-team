@@ -21,11 +21,18 @@ def read(rel: str) -> str:
     return (ROOT / rel).read_text(encoding="utf-8")
 
 
+def section(text: str, heading: str) -> str:
+    start = text.index(heading)
+    rest = text[start + len(heading):]
+    end = re.search(r"(?m)^## ", rest)
+    return rest[: end.start()] if end else rest
+
+
 def broken_links(text: str, base: Path) -> list[str]:
     """Relative links whose target is missing. External URLs, in-page anchors, fenced code and code spans are ignored."""
     broken = []
     for target in LINK.findall(CODE_SPAN.sub("", FENCE_ANY.sub("", text))):
-        if re.match(r"^[a-z][a-z0-9+.-]*:", target, re.IGNORECASE) or target.startswith("#"):
+        if re.match(r"^(?:https?|mailto):", target, re.IGNORECASE) or target.startswith("#"):
             continue
         path = target.split("#", 1)[0]
         if path and not (base / path).exists():
@@ -77,13 +84,42 @@ def test_ecosystem_has_five_fields():
 
 def test_python_floor_consistent():
     for rel in ("INSTALL.md", "README.md", "README.vi.md"):
-        text = read(rel)
-        assert "3.11" in text, f"{rel} must state Python 3.11"
-        assert not re.search(r"3\.(?:9|10)(?!\d)", text), f"{rel} promises a lower Python"
+        assert "3.11" in read(rel), f"{rel} must state Python 3.11"
+    skills = [p.relative_to(ROOT).as_posix() for p in sorted(ROOT.glob("skills/*/SKILL.md"))]
+    for rel in [*USER_DOCS, *skills]:
+        assert not re.search(r"(?<![\d.])3\.(?:9|10)(?!\d)", read(rel)), f"{rel} promises a lower Python"
 
 
 def test_link_checker_catches_a_broken_link(tmp_path):
     (tmp_path / "real.md").write_text("x", encoding="utf-8")
-    text = ("[ok](real.md) [gone](missing.md) [web](https://example.org/x) [anchor](#top)\n"
+    text = ("[ok](real.md) [gone](missing.md) [web](https://example.org/x) [anchor](#top) [mail](mailto:a@b.c)\n"
+            "[drive](C:/nowhere/x.md)\n"
             "```text\n[in code](nothing.md)\n```\n")
-    assert broken_links(text, tmp_path) == ["missing.md"]
+    assert broken_links(text, tmp_path) == ["missing.md", "C:/nowhere/x.md"]
+
+
+def test_cli_commands_in_install_ignore_cwd():
+    forms = re.findall(r"python3? -B[^\n]*agent_customer_team\.cli[^\n]*", read("INSTALL.md"))
+    assert forms, "INSTALL.md must show the CLI command"
+    for form in forms:
+        assert " -B -P -m " in form, f"missing -B -P: {form}"
+
+
+def test_install_check_has_bash_and_powershell_forms():
+    check = section(read("INSTALL.md"), "## 5. Kiểm")
+    assert "```bash" in check and "```powershell" in check
+    powershell = re.search(r"^```powershell\n(.*?)^```", check, re.M | re.S).group(1)
+    assert "&&" not in powershell
+    assert "python -m pytest" in powershell
+
+
+def test_codex_page_does_not_use_plugin_list_as_install_oracle():
+    text = read("hosts/codex/README.md")
+    assert "`codex plugin list` có" not in text
+    assert '[plugins."agent-customer-team@agent-customer-team"]' in text
+    assert "skills/customer-support-offline/SKILL.md" in text
+
+
+def test_docs_say_to_keep_coverage_file_outside_the_tree():
+    for rel in ("README.md", "README.vi.md", "docs/offline-guide.md"):
+        assert "COVERAGE_FILE" in read(rel), f"{rel} must mention COVERAGE_FILE"

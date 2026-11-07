@@ -72,15 +72,28 @@ luật cấp người dùng của harness.
 cd <plugin-root> && python -m pytest
 ```
 
-Kỳ vọng: mọi test đạt, không lỗi. Rồi chạy lệnh mẫu của skill trên ba file thử có sẵn:
-
-```bash
-PYTHONPATH="<plugin-root>/src" python -B -m agent_customer_team.cli --context "<plugin-root>/tests/fixtures/context.json" --payload "<plugin-root>/tests/fixtures/payload.json" --knowledge "<plugin-root>/tests/fixtures/knowledge.json"
+```powershell
+Set-Location '<plugin-root>'; python -m pytest
 ```
 
-Kỳ vọng: exit 0 và một dòng JSON có `"status":"draft"`. Trên Windows PowerShell đặt `$env:PYTHONPATH` rồi chạy
-`python -B -m …` như trong skill. Rồi mở **phiên mới** trong harness và nhờ phân loại một ca hỗ trợ tổng hợp từ ba
-file đó; `installed` chưa có nghĩa là skill đã được nạp và gọi — chỉ báo những mốc đã đo.
+Kỳ vọng: mọi test đạt, không lỗi. Chạy coverage (tuỳ chọn) thì đặt `COVERAGE_FILE` trỏ ra ngoài cây repo. Rồi chạy lệnh
+mẫu của skill trên ba file thử có sẵn (cờ `-P` để thư mục đang đứng không thay được mã của plugin):
+
+```bash
+PYTHONPATH="<plugin-root>/src" python -B -P -m agent_customer_team.cli --context "<plugin-root>/tests/fixtures/context.json" --payload "<plugin-root>/tests/fixtures/payload.json" --knowledge "<plugin-root>/tests/fixtures/knowledge.json"
+```
+
+```powershell
+$old = $env:PYTHONPATH
+try {
+  $env:PYTHONPATH = Join-Path '<plugin-root>' 'src'
+  python -B -P -m agent_customer_team.cli --context '<plugin-root>\tests\fixtures\context.json' --payload '<plugin-root>\tests\fixtures\payload.json' --knowledge '<plugin-root>\tests\fixtures\knowledge.json'
+} finally { $env:PYTHONPATH = $old }
+```
+
+Trên macOS dùng `python3 -B -P -m …`. Kỳ vọng: exit 0 và một dòng JSON có `"status":"draft"`. Rồi mở **phiên mới** trong
+harness và nhờ phân loại một ca hỗ trợ tổng hợp từ ba file đó; `installed` chưa có nghĩa là skill đã được nạp và gọi —
+chỉ báo những mốc đã đo.
 
 ## 6. Cập nhật và gỡ
 

@@ -21,8 +21,11 @@ codex plugin add agent-customer-team@agent-customer-team
 
 ## 3. Kiểm, cập nhật, gỡ
 
-- **Kiểm:** `codex plugin list` có `agent-customer-team`; phiên **mới**, nhờ phân loại một ca hỗ trợ tổng hợp từ ba file
-  thử trong `tests/fixtures/`.
+- **Kiểm đã cài:** thư mục cache cài của Codex có `skills/customer-support-offline/SKILL.md` của plugin **và** cấu hình
+  Codex có bảng `[plugins."agent-customer-team@agent-customer-team"]` (chỉ kiểm có hay không, không chép nội dung cấu
+  hình). `codex plugin list` liệt kê plugin *có sẵn* trong marketplace, không phải plugin đã cài, nên không dùng nó làm
+  bằng chứng đã cài.
+- **Kiểm đã nạp và gọi:** phiên **mới**, nhờ phân loại một ca hỗ trợ tổng hợp từ ba file thử trong `tests/fixtures/`.
 - **Cập nhật:** lấy bản checkout mới rồi cài lại theo mục 2.
 - **Gỡ:** `codex plugin remove agent-customer-team@agent-customer-team`, rồi `codex plugin marketplace remove agent-customer-team`
   (hỏi người dùng trước).

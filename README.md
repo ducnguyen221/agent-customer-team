@@ -32,7 +32,7 @@ From the repository root:
 python -m pytest
 ```
 
-No environment variable is needed; `pyproject.toml` puts `src` on the path. `pytest-cov` is optional, for coverage.
+No environment variable is needed; `pyproject.toml` puts `src` on the path. `pytest-cov` is optional, for coverage; when you use it, point `COVERAGE_FILE` at a path outside the tree so no `.coverage` file lands in the repository.
 
 ## Layout
 

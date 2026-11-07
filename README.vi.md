@@ -31,7 +31,7 @@ Từ gốc repo:
 python -m pytest
 ```
 
-Không cần đặt biến môi trường; `pyproject.toml` đã đưa `src` vào đường nạp. `pytest-cov` là tuỳ chọn, để đo coverage.
+Không cần đặt biến môi trường; `pyproject.toml` đã đưa `src` vào đường nạp. `pytest-cov` là tuỳ chọn, để đo coverage; khi dùng thì đặt `COVERAGE_FILE` trỏ ra ngoài cây repo để không có file `.coverage` rơi vào repo.
 
 ## Cấu trúc
 
