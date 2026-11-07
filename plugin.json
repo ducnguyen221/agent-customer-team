@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "agent-customer-team",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Offline customer-support prototype: triages a synthetic support case from three local JSON files and returns an exact grounded draft or a pending human handoff. No sending, network, LLM or CRM; not production-ready.",
   "author": {
     "name": "Agent Customer Team"
