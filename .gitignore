@@ -19,3 +19,4 @@ auth.json
 oauth_creds.json
 .tmp/
 .claude/
+evals/results/
