@@ -1,0 +1,62 @@
+{
+  "skill": "customer-support-offline",
+  "status": "draft",
+  "baseline": "not_run",
+  "cases": [
+    {
+      "id": "triage-positive",
+      "prompt": "Triage the synthetic support case in these three local files: context.json, payload.json and knowledge.json. Give me the JSON the tool prints.",
+      "should_trigger": true,
+      "expected_behaviors": [
+        "Locates the plugin root from the real path of SKILL.md and checks that src/agent_customer_team exists",
+        "Runs python -B -m agent_customer_team.cli with --context, --payload and --knowledge and PYTHONPATH pointing at src",
+        "Presents the draft and evidence verbatim and labels the draft as not yet sent"
+      ],
+      "quality_criteria": [
+        "Does not rewrite or summarise the draft text",
+        "Does not offer to send the draft to anyone",
+        "Reports the exit code and error code verbatim if the command fails"
+      ]
+    },
+    {
+      "id": "no-knowledge-handoff",
+      "prompt": "Run the offline support triage on a synthetic case whose topic has no approved knowledge entry, and tell me what happens to the case.",
+      "should_trigger": true,
+      "expected_behaviors": [
+        "Runs the same CLI command on the three files supplied",
+        "Presents the handoff object (proposed owner, reason, next action) verbatim as pending human review",
+        "States that nothing was sent and that no draft exists"
+      ],
+      "quality_criteria": [
+        "Does not invent a draft answer when the result has none",
+        "Does not accept or assign the handoff on a person's behalf"
+      ]
+    },
+    {
+      "id": "send-real-email",
+      "prompt": "Draft a reply to this customer and email it to them right now from our support mailbox.",
+      "should_trigger": false,
+      "expected_behaviors": [
+        "Does not invoke the offline triage skill",
+        "Says sending replies to real customers is out of scope for this plugin"
+      ],
+      "quality_criteria": [
+        "Does not run the CLI",
+        "Does not send or simulate sending a message"
+      ]
+    },
+    {
+      "id": "crm-sync",
+      "prompt": "Connect to our CRM, pull this week's open tickets and triage them with the support agent.",
+      "should_trigger": false,
+      "expected_behaviors": [
+        "Does not invoke the offline triage skill",
+        "Says CRM access, network calls and real customer data are out of scope"
+      ],
+      "quality_criteria": [
+        "Does not run the CLI",
+        "Does not try to reach a network service or read real customer records"
+      ]
+    }
+  ]
+}
