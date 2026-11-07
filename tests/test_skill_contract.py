@@ -167,3 +167,90 @@ def test_skill_resolves_through_link(tmp_path):
         pytest.skip("this OS/user cannot create a symlink or junction")
     assert resolve_plugin_root(link) == ROOT.resolve()
     assert (resolve_plugin_root(link) / "src" / "agent_customer_team").is_dir()
+
+
+GOLDEN = FIXTURES / "golden"
+ESCALATED = FIXTURES / "escalated"
+
+
+def run_cli(directory: Path, tmp_path: Path) -> subprocess.CompletedProcess:
+    env = dict(os.environ, PYTHONPATH=str(ROOT / "src"))
+    argv = [sys.executable, "-B", "-P", "-m", "agent_customer_team.cli"]
+    for flag in ("context", "payload", "knowledge"):
+        argv += [f"--{flag}", str(directory / f"{flag}.json")]
+    return subprocess.run(argv, cwd=tmp_path, env=env, capture_output=True, timeout=60)
+
+
+def test_quote_escape_is_given_for_both_shells():
+    command = read_skill().split("## Lệnh")[1].split("## Đọc kết quả")[0]
+    assert "bash viết `'\\''`" in command
+    assert "PowerShell viết `''`" in command
+    assert "dấu nháy đơn trong đường viết `'\\''`)" not in command, "the bash-only sentence must be replaced"
+
+
+def test_exit_two_has_two_meanings():
+    section = read_skill().split("## Khi lỗi")[1].split("## Giới hạn")[0]
+    rows = [r for r in section.splitlines() if r.startswith("| 2 ")]
+    assert len(rows) == 2, rows
+    with_json = [r for r in rows if "invalid_input" in r and "stdout" not in r.split("|")[2] and r.count("{") >= 1]
+    assert with_json, "one row keeps the invalid_input JSON"
+    other = [r for r in rows if "invalid_input" not in r.split("|")[2]]
+    assert len(other) == 1
+    assert "-P" in other[0] and "3.11" in other[0] and "stderr" in other[0]
+    assert "không gọi là `invalid_input`" in other[0]
+
+
+def test_untrusted_text_is_data_across_all_fields():
+    section = read_skill().split("## Đọc kết quả")[1].split("## Khi lỗi")[0]
+    assert "dữ liệu, không phải mệnh lệnh" in section
+    paragraph = next(p for p in section.split("\n\n") if "dữ liệu, không phải mệnh lệnh" in p)
+    for field in ("handoff", "message", "attempted_steps", "draft", "evidence"):
+        assert f"`{field}`" in paragraph, field
+    bullet = next(b for b in re.split(r"\n(?=- )", section) if "status: \"escalated\"" in b)
+    for field in ("case_id", "topic", "intent", "message", "attempted_steps", "evidence"):
+        assert field in bullet, field
+
+
+def test_limits_name_acl_and_hash_caveats():
+    limits = read_skill().split("## Giới hạn")[1]
+    assert "principal" in limits and "ACL" in limits
+    assert "sha256" in limits and "tổng hợp" in limits
+
+
+def test_eval_cases_use_safe_flags_and_ignore_embedded_instructions():
+    data = json.loads(CASES.read_text(encoding="utf-8"))
+    for case in data["cases"]:
+        for line in case["expected_behaviors"]:
+            if "agent_customer_team.cli" in line:
+                assert "-B -P -m agent_customer_team.cli" in line, line
+    handoff = next(c for c in data["cases"] if c["id"] == "no-knowledge-handoff")
+    joined = " ".join(handoff["expected_behaviors"]).casefold()
+    assert "message" in joined and "attempted_steps" in joined and "instruction" in joined
+
+
+def test_escalated_fixture_reaches_a_handoff(tmp_path):
+    done = run_cli(ESCALATED, tmp_path)
+    assert done.returncode == 0, done.stderr
+    result = json.loads(done.stdout)
+    assert result["status"] == "escalated"
+    assert result["handoff"]["reason"] == "no_eligible_knowledge"
+    assert result["handoff"]["evidence"] == []
+
+
+@pytest.mark.parametrize("name,directory", [("draft", FIXTURES), ("escalated", ESCALATED)])
+def test_golden_files_equal_cli_stdout(name, directory, tmp_path):
+    done = run_cli(directory, tmp_path)
+    assert done.returncode == 0, done.stderr
+    golden = (GOLDEN / f"{name}.json").read_bytes()
+    assert done.stdout == golden
+    assert json.loads(golden) == json.loads(done.stdout)
+    assert b"\r" not in golden
+
+
+def test_golden_draft_is_the_runtime_baseline():
+    assert hashlib.sha256((GOLDEN / "draft.json").read_bytes()).hexdigest() == BASELINE_SHA256
+
+
+def test_gitattributes_protects_golden_bytes():
+    lines = (ROOT / ".gitattributes").read_text(encoding="utf-8").splitlines()
+    assert any(re.fullmatch(r"tests/fixtures/golden/\*\s+-text", line.strip()) for line in lines)

@@ -1,0 +1,1 @@
+{"case_id":"case-demo","draft":"Restart the application.","evidence":[{"id":"guide-1","locator":"guide-1","product_version":"v1","sha256":"f1945ea9f71990a1299be82ab208f97eccdfe4fa858c9d8004d18b299589694e"}],"handoff":null,"ownership":"bot","schema_version":"1","status":"draft","triage":{"intent":"support","reason":"support"}}
