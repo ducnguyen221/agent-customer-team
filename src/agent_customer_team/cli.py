@@ -25,8 +25,21 @@ class _JsonInteger:
         self.length = len(token)
 
 
+_DEVICES = {"CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$", "CLOCK$"}
+_DEVICES |= {"COM%d" % n for n in range(1, 10)} | {"LPT%d" % n for n in range(1, 10)}
+
+
+def _unsafe_path(path: str) -> bool:
+    """Lexical refusal of UNC, device and NT object paths and Windows device names."""
+    normal = path.replace("\\", "/")
+    if "\x00" in path or normal.startswith(("//", "/??/")):
+        return True
+    return any(part.split(":")[0].split(".")[0].rstrip(" ").upper() in _DEVICES
+               for part in normal.split("/"))
+
+
 def _load(path: str) -> object:
-    if path.replace("\\", "/").startswith("//") or "\x00" in path:
+    if _unsafe_path(path):
         raise OSError("invalid local path")
     with Path(path).open("rb") as stream:
         raw = stream.read(65537)

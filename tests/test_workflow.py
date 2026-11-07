@@ -57,3 +57,12 @@ def test_decision_table(owner, intent, docs, triage_reason, handoff_reason):
     assert (result['handoff']['reason'] if result['handoff'] else None) == handoff_reason
     assert result['draft'] is None and result['evidence'] == []
 
+
+def test_triage_support_requires_explicit_bot_and_support():
+    assert triage({'ownership': 'bot'}, {'intent': 'support'}) == {'intent': 'support', 'reason': 'support'}
+
+
+@pytest.mark.parametrize('ownership,intent', [('Human', 'support'), ('admin', 'support'), ('', 'support'), ('bot', 'Support'), ('bot', 'refund'), ('bot', ''), (None, 'support'), ('bot', None)])
+def test_triage_unknown_value_never_defaults_to_support(ownership, intent):
+    with pytest.raises(ValueError):
+        triage({'ownership': ownership}, {'intent': intent})

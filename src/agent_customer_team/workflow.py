@@ -4,6 +4,8 @@
 def triage(context: dict, payload: dict) -> dict:
     """Use explicit ownership and fixture intent; no natural language inference."""
     ownership, intent = context["ownership"], payload["intent"]
+    if ownership not in ("bot", "human", "paused") or intent not in ("support", "risk", "unknown"):
+        raise ValueError("unknown ownership or intent")
     if ownership == "human":
         reason = "human_ownership"
     elif ownership == "paused":
@@ -12,8 +14,10 @@ def triage(context: dict, payload: dict) -> dict:
         reason = "risk_requires_human"
     elif intent == "unknown":
         reason = "unknown_intent"
-    else:
+    elif ownership == "bot" and intent == "support":
         reason = "support"
+    else:  # pragma: no cover - unreachable after the allowlist check above
+        raise ValueError("unroutable case")
     return {"intent": intent, "reason": reason}
 
 
