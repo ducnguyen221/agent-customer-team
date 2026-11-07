@@ -34,6 +34,20 @@ def test_manifests_parse_and_share_identity():
     assert "interface" in manifests[".codex-plugin/plugin.json"]
 
 
+def test_manifest_specific_fields():
+    root = load("plugin.json")
+    assert root.get("$schema") == "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+    assert root.get("extensions", {}).get("org.agent-customer-team", {}).get("claudeManifest") == \
+        ".claude-plugin/plugin.json"
+    codex = load(".codex-plugin/plugin.json")
+    interface = codex.get("interface")
+    assert isinstance(interface, dict)
+    for key in ("displayName", "shortDescription", "category", "capabilities"):
+        assert interface.get(key), f"codex interface lacks {key}"
+    for rel in (".claude-plugin/plugin.json", ".codex-plugin/plugin.json"):
+        assert load(rel).get("skills") == "./skills/", f"{rel}: skills must be ./skills/"
+
+
 def test_license_file_matches_manifest():
     first = (ROOT / "LICENSE").read_text(encoding="utf-8").splitlines()[0].strip()
     assert first == load("plugin.json")["license"] == "UNLICENSED"
@@ -68,7 +82,8 @@ def forbidden_tracked(paths: list[str]) -> list[str]:
     for path in paths:
         parts = path.split("/")
         name = parts[-1]
-        if (name == ".agile.json"
+        if (name in (".agile.json", "auth.json", "oauth_creds.json")
+                or "output" in parts[:-1]
                 or path.startswith(("docs/plans/", "docs/evidence/"))
                 or (name.startswith(".env") and name != ".env.example")
                 or name.endswith((".pem", ".key", ".credentials.json"))
@@ -82,23 +97,45 @@ def test_forbidden_detector_catches_its_targets():
               "k.key", "a.credentials.json", ".tmp/x", ".claude/settings.json", "sub/.tmp/x"]
     assert forbidden_tracked(sample) == sample
     assert forbidden_tracked([".env.example", "README.md", ".claude-plugin/plugin.json", "skills/a/SKILL.md"]) == []
+    # every secret entry of .gitignore
+    more = ["auth.json", "sub/oauth_creds.json", "output/result.json", "x/output/y.txt"]
+    assert forbidden_tracked(more) == more
+    assert forbidden_tracked(["outputs/a.md", "src/output.py"]) == []
 
 
-def test_records_and_secrets_not_tracked():
+def tracked_files(root: Path) -> list[str] | None:
+    """Tracked paths of the git repository rooted exactly at root; None when git or such a repository is missing."""
     try:
-        probe = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "--is-inside-work-tree"],
+        probe = subprocess.run(["git", "-C", str(root), "rev-parse", "--is-inside-work-tree"],
                                capture_output=True, text=True, timeout=30)
         inside = probe.returncode == 0 and probe.stdout.strip() == "true"
         if inside:  # a plain copy placed inside another work tree is not this repository
-            top = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "--show-toplevel"],
+            top = subprocess.run(["git", "-C", str(root), "rev-parse", "--show-toplevel"],
                                  capture_output=True, text=True, timeout=30).stdout.strip()
-            inside = bool(top) and Path(top).resolve() == ROOT.resolve()
+            inside = bool(top) and Path(top).resolve() == root.resolve()
+        if not inside:
+            return None
+        listed = subprocess.run(["git", "-C", str(root), "ls-files", "-z"], capture_output=True, text=True,
+                                encoding="utf-8", timeout=30, check=True).stdout
     except (OSError, subprocess.SubprocessError):
-        inside = False
-    if not inside:
+        return None
+    return [p for p in listed.split("\0") if p]
+
+
+def test_records_and_secrets_not_tracked():
+    tracked = tracked_files(ROOT)
+    if tracked is None:
         pytest.skip("git is unavailable or this is not a work tree")
-    listed = subprocess.run(["git", "-C", str(ROOT), "ls-files", "-z"], capture_output=True, text=True,
-                            encoding="utf-8", timeout=30, check=True).stdout
-    tracked = [p for p in listed.split("\0") if p]
     assert tracked, "git lists no tracked files"
     assert forbidden_tracked(tracked) == []
+
+
+def test_forced_secret_in_a_real_repo_is_flagged(tmp_path):
+    if subprocess.run(["git", "init", "-q", str(tmp_path)], capture_output=True).returncode != 0:
+        pytest.skip("git is unavailable")
+    (tmp_path / "auth.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "ok.md").write_text("ok", encoding="utf-8")
+    subprocess.run(["git", "-C", str(tmp_path), "add", "-f", "auth.json", "ok.md"], check=True, capture_output=True)
+    tracked = tracked_files(tmp_path)
+    assert tracked is not None and sorted(tracked) == ["auth.json", "ok.md"]
+    assert forbidden_tracked(tracked) == ["auth.json"]
