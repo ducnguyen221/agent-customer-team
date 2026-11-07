@@ -33,6 +33,8 @@ python -m pytest
 
 Không cần đặt biến môi trường; `pyproject.toml` đã đưa `src` vào đường nạp. `pytest-cov` là tuỳ chọn, để đo coverage; khi dùng thì đặt `COVERAGE_FILE` trỏ ra ngoài cây repo để không có file `.coverage` rơi vào repo.
 
+GitHub Actions chạy bộ test trên Ubuntu, macOS và Windows với Python 3.11, 3.12 và 3.13 (`.github/workflows/ci.yml`).
+
 ## Cấu trúc
 
 | Đường | Nội dung |

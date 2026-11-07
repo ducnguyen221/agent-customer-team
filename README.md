@@ -34,6 +34,8 @@ python -m pytest
 
 No environment variable is needed; `pyproject.toml` puts `src` on the path. `pytest-cov` is optional, for coverage; when you use it, point `COVERAGE_FILE` at a path outside the tree so no `.coverage` file lands in the repository.
 
+GitHub Actions runs the suite on Ubuntu, macOS and Windows with Python 3.11, 3.12 and 3.13 (`.github/workflows/ci.yml`).
+
 ## Layout
 
 | Path | What |
