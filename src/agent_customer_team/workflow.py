@@ -21,9 +21,16 @@ def triage(context: dict, payload: dict) -> dict:
     return {"intent": intent, "reason": reason}
 
 
+def _evidence(document: dict) -> dict:
+    """Metadata of one document with the digest of its answer; never the answer itself."""
+    import hashlib
+
+    return {"id": document["id"], "product_version": document["product_version"],
+            "locator": document["locator"], "sha256": hashlib.sha256(document["answer"].encode("utf-8")).hexdigest()}
+
+
 def run_case(context: dict, payload: dict, corpus: dict) -> dict:
     """Produce an internal draft or a pending handoff without side effects."""
-    import hashlib
     from .contracts import parse_inputs
     from .knowledge import retrieve
 
@@ -37,15 +44,17 @@ def run_case(context: dict, payload: dict, corpus: dict) -> dict:
         result.update(status="human_owned", ownership="human")
         return result
     if reason == "support":
-        document, reason = retrieve(context, payload["topic"], corpus)
+        document, reason, conflicting = retrieve(context, payload["topic"], corpus)
         if reason == "eligible":
             answer = document["answer"]
-            result.update(status="draft", ownership="bot", draft=answer,
-                          evidence=[{"id": document["id"], "product_version": document["product_version"],
-                                     "locator": document["locator"],
-                                     "sha256": hashlib.sha256(answer.encode("utf-8")).hexdigest()}])
+            result.update(status="draft", ownership="bot", draft=answer, evidence=[_evidence(document)])
             return result
+    else:
+        conflicting = []
     result["handoff"] = {"status": "pending", "ownership": "paused", "proposed_owner": context["proposed_owner"],
                          "reason": reason, "summary": "case:" + payload["case_id"],
-                         "next_action": "await_human_review"}
+                         "next_action": "await_human_review", "case_id": payload["case_id"],
+                         "topic": payload["topic"], "intent": payload["intent"], "message": payload["message"],
+                         "attempted_steps": list(payload["attempted_steps"]),
+                         "evidence": [_evidence(item) for item in conflicting]}
     return result

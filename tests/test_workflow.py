@@ -33,7 +33,7 @@ def test_human_and_paused_never_draft(owner):
 
 def test_no_knowledge_handoff():
     result = run(docs=())
-    assert result['handoff'] == {'status': 'pending', 'ownership': 'paused', 'proposed_owner': 'agent', 'reason': 'no_eligible_knowledge', 'summary': 'case:case1', 'next_action': 'await_human_review'}
+    assert result['handoff'] == {'status': 'pending', 'ownership': 'paused', 'proposed_owner': 'agent', 'reason': 'no_eligible_knowledge', 'summary': 'case:case1', 'next_action': 'await_human_review', 'case_id': 'case1', 'topic': 'reset', 'intent': 'support', 'message': 'help', 'attempted_steps': [], 'evidence': []}
 
 @pytest.mark.parametrize(
     'owner,intent,docs,triage_reason,handoff_reason',

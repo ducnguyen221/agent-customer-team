@@ -93,10 +93,10 @@ def test_eligible_document_exact_fields_accepted():
 
 @pytest.mark.parametrize("extra", [{"note": "x"}, {"owner": "x"}, {"answer_html": "<b>"}])
 def test_eligible_document_with_extra_field_is_invalid(extra):
-    assert retrieve(C, "reset", {"documents": [doc(**extra)]}) == (None, "invalid_scoped_knowledge")
+    assert retrieve(C, "reset", {"documents": [doc(**extra)]}) == (None, "invalid_scoped_knowledge", [])
 
 
 def test_eligible_document_missing_field_is_invalid():
     item = dict(D)
     del item["locator"]
-    assert retrieve(C, "reset", {"documents": [item]}) == (None, "invalid_scoped_knowledge")
+    assert retrieve(C, "reset", {"documents": [item]}) == (None, "invalid_scoped_knowledge", [])

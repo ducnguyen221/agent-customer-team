@@ -8,14 +8,16 @@ def find(*docs):
 
 @pytest.mark.parametrize('change', [{'tenant_id': 'other'}, {'product': 'other'}, {'product_version': 'v2'}, {'topic': 'other'}, {'acl': ['u2']}, {'acl': 'u10'}, {'status': 'draft'}, {'effective_from': '2026-01-02'}, {'effective_from': '2025-01-01', 'expires_at': '2025-12-31'}])
 def test_scope_and_dates(change):
-    assert find(doc(**change)) == (None, 'no_eligible_knowledge')
+    assert find(doc(**change)) == (None, 'no_eligible_knowledge', [])
 
 def test_inclusive_dates():
     assert find(doc(expires_at='2026-01-01'))[1] == 'eligible'
     assert find(doc(effective_from='2026-01-01'))[1] == 'eligible'
 
 def test_conflict():
-    assert find(D, doc(id='b', answer='Different')) == (None, 'conflicting_knowledge')
+    result = find(doc(id='b', answer='Different'), D)
+    assert result[:2] == (None, 'conflicting_knowledge')
+    assert [item['id'] for item in result[2]] == ['a', 'b']
 
 def test_identical_tiebreak():
     assert find(doc(id='z'), D)[0]['id'] == 'a'
@@ -29,7 +31,7 @@ def test_selector_precedence(extra):
 
 @pytest.mark.parametrize('change', [{'answer': None}, {'id': None}, {'effective_from': 'bad'}, {'expires_at': '2025-01-01', 'effective_from': '2026-01-01'}, {'answer': '\ud800'}])
 def test_granted_malformed_is_pending(change):
-    assert find(doc(**change)) == (None, 'invalid_scoped_knowledge')
+    assert find(doc(**change)) == (None, 'invalid_scoped_knowledge', [])
 
 def test_duplicate_eligible_id():
-    assert find(D, copy.deepcopy(D)) == (None, 'invalid_scoped_knowledge')
+    assert find(D, copy.deepcopy(D)) == (None, 'invalid_scoped_knowledge', [])

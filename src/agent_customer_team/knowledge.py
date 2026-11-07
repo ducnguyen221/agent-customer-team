@@ -7,7 +7,7 @@ SCOPE = ("tenant_id", "product", "product_version", "topic")
 FIELDS = set(SCOPE) | {"id", "status", "acl", "effective_from", "expires_at", "locator", "answer"}
 
 
-def retrieve(context: dict, topic: str, corpus: dict) -> tuple[dict | None, str]:
+def retrieve(context: dict, topic: str, corpus: dict) -> tuple[dict | None, str, list[dict]]:
     """Filter access before checking potentially confidential content."""
     eligible = []
     for item in corpus["documents"]:
@@ -22,19 +22,19 @@ def retrieve(context: dict, topic: str, corpus: dict) -> tuple[dict | None, str]
             continue
         start, end = item.get("effective_from"), item.get("expires_at")
         if not valid_date(start) or not valid_date(end) or start > end:
-            return None, "invalid_scoped_knowledge"
+            return None, "invalid_scoped_knowledge", []
         if not start <= context["as_of"] <= end:
             continue
         locator = item.get("locator")
         if (set(item) != FIELDS or not identifier(item.get("id"))
                 or not text(locator, 128) or any(unicodedata.category(c) == "Cc" for c in locator)
                 or not text(item.get("answer"), 1024)):
-            return None, "invalid_scoped_knowledge"
+            return None, "invalid_scoped_knowledge", []
         eligible.append(item)
     if not eligible:
-        return None, "no_eligible_knowledge"
+        return None, "no_eligible_knowledge", []
     if len({item["id"] for item in eligible}) != len(eligible):
-        return None, "invalid_scoped_knowledge"
+        return None, "invalid_scoped_knowledge", []
     if len({item["answer"] for item in eligible}) != 1:
-        return None, "conflicting_knowledge"
-    return min(eligible, key=lambda item: item["id"]), "eligible"
+        return None, "conflicting_knowledge", sorted(eligible, key=lambda item: item["id"])
+    return min(eligible, key=lambda item: item["id"]), "eligible", []
