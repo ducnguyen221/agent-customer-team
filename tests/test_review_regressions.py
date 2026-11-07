@@ -81,12 +81,9 @@ def test_nonstandard_constant_in_denied_record_rejected(tmp_path, constant):
     paths[2].write_text('{"documents":[' + json.dumps(D) + ',' + denied + ']}', encoding='utf-8')
     assert execute(paths).returncode == 2
 
-def test_unc_is_rejected_before_open(monkeypatch, capsysbinary):
-
-    def no_open(*args, **kwargs):
-        raise AssertionError('attempted open')
-    monkeypatch.setattr(Path, 'open', no_open)
-    result = main(['--context', '\\\\server\\share', '--payload', 'a', '--knowledge', 'b'])
+def test_unc_is_rejected_before_open(no_open, capsysbinary):
+    with no_open():
+        result = main(['--context', '\\\\server\\share', '--payload', 'a', '--knowledge', 'b'])
     assert result == 3
     assert json.loads(capsysbinary.readouterr().out) == {'error': {'code': 'read_error'}}
 
@@ -98,19 +95,12 @@ def test_duplicate_keys_inside_denied_record(tmp_path):
     assert execute(paths).returncode == 2
 
 @pytest.mark.parametrize('path', ['/\\example.invalid/test/unused', '\\/example.invalid/test/unused', '/\\./pipe/unopened'])
-def test_mixed_unc_rejected_before_open(path, monkeypatch, capsysbinary):
-    calls = []
-
-    def tripwire(*args, **kwargs):
-        calls.append(args)
-        raise OSError('tripwire')
-
-    monkeypatch.setattr(Path, 'open', tripwire)
-    result = main(['--context', path, '--payload', 'a', '--knowledge', 'b'])
+def test_mixed_unc_rejected_before_open(path, no_open, capsysbinary):
+    with no_open():
+        result = main(['--context', path, '--payload', 'a', '--knowledge', 'b'])
     captured = capsysbinary.readouterr()
 
     assert result == 3
     assert captured.out == b'{"error":{"code":"read_error"}}\n'
     assert captured.err == b''
     assert path.encode() not in captured.out
-    assert calls == []

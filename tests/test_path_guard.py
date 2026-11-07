@@ -1,6 +1,5 @@
 """Lexical path guard: NT object prefixes and Windows device names are refused."""
 import json
-from pathlib import Path
 
 import pytest
 from agent_customer_team.cli import _load, _unsafe_path, main
@@ -28,12 +27,8 @@ def test_refused_paths_are_flagged(path):
 
 
 @pytest.mark.parametrize("path", REFUSED)
-def test_refused_paths_raise_oserror(path, monkeypatch):
-    def opened(self, *args, **kwargs):
-        raise AssertionError("open reached")
-
-    monkeypatch.setattr(Path, "open", opened)
-    with pytest.raises(OSError):
+def test_refused_paths_raise_oserror(path, no_open):
+    with no_open(), pytest.raises(OSError):
         _load(path)
 
 

@@ -2,6 +2,7 @@
 sprint record, secret or scratch path is tracked by git."""
 import json
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -104,20 +105,27 @@ def test_forbidden_detector_catches_its_targets():
     assert forbidden_tracked(["outputs/a.md", "src/output.py"]) == []
 
 
+def run_git(*args: str, **kwargs) -> subprocess.CompletedProcess:
+    """Run git with a hard timeout; a hang fails the test instead of blocking it."""
+    try:
+        return subprocess.run(["git", *args], capture_output=True, timeout=30, **kwargs)
+    except subprocess.TimeoutExpired:
+        pytest.fail("git " + " ".join(args) + " timed out after 30 s")
+
+
 def tracked_files(root: Path) -> list[str] | None:
     """Tracked paths of the git repository rooted exactly at root; None when git or such a repository is missing."""
+    if shutil.which("git") is None:
+        return None
     try:
-        probe = subprocess.run(["git", "-C", str(root), "rev-parse", "--is-inside-work-tree"],
-                               capture_output=True, text=True, timeout=30)
+        probe = run_git("-C", str(root), "rev-parse", "--is-inside-work-tree", text=True)
         inside = probe.returncode == 0 and probe.stdout.strip() == "true"
         if inside:  # a plain copy placed inside another work tree is not this repository
-            top = subprocess.run(["git", "-C", str(root), "rev-parse", "--show-toplevel"],
-                                 capture_output=True, text=True, timeout=30).stdout.strip()
+            top = run_git("-C", str(root), "rev-parse", "--show-toplevel", text=True).stdout.strip()
             inside = bool(top) and Path(top).resolve() == root.resolve()
         if not inside:
             return None
-        listed = subprocess.run(["git", "-C", str(root), "ls-files", "-z"], capture_output=True, text=True,
-                                encoding="utf-8", timeout=30, check=True).stdout
+        listed = run_git("-C", str(root), "ls-files", "-z", text=True, encoding="utf-8", check=True).stdout
     except (OSError, subprocess.SubprocessError):
         return None
     return [p for p in listed.split("\0") if p]
@@ -132,11 +140,36 @@ def test_records_and_secrets_not_tracked():
 
 
 def test_forced_secret_in_a_real_repo_is_flagged(tmp_path):
-    if subprocess.run(["git", "init", "-q", str(tmp_path)], capture_output=True).returncode != 0:
-        pytest.skip("git is unavailable")
+    if shutil.which("git") is None:
+        pytest.skip("git is not installed")
+    if run_git("init", "-q", str(tmp_path)).returncode != 0:
+        pytest.skip("git init failed in a temporary directory")
     (tmp_path / "auth.json").write_text("{}", encoding="utf-8")
     (tmp_path / "ok.md").write_text("ok", encoding="utf-8")
-    subprocess.run(["git", "-C", str(tmp_path), "add", "-f", "auth.json", "ok.md"], check=True, capture_output=True)
+    assert run_git("-C", str(tmp_path), "add", "-f", "auth.json", "ok.md").returncode == 0
     tracked = tracked_files(tmp_path)
     assert tracked is not None and sorted(tracked) == ["auth.json", "ok.md"]
     assert forbidden_tracked(tracked) == ["auth.json"]
+
+
+def test_missing_git_means_no_tracked_listing(monkeypatch):
+    def refuse(*args, **kwargs):
+        raise AssertionError("git must not be started when it is missing")
+
+    monkeypatch.setattr(shutil, "which", lambda name: None)
+    monkeypatch.setattr(subprocess, "run", refuse)
+    assert tracked_files(ROOT) is None
+
+
+def test_hanging_git_fails_with_a_clear_message(monkeypatch):
+    seen = []
+
+    def hang(cmd, *args, **kwargs):
+        seen.append(kwargs.get("timeout"))
+        raise subprocess.TimeoutExpired(cmd, kwargs.get("timeout"))
+
+    monkeypatch.setattr(shutil, "which", lambda name: "git")
+    monkeypatch.setattr(subprocess, "run", hang)
+    with pytest.raises(pytest.fail.Exception, match="rev-parse .* timed out"):
+        tracked_files(ROOT)
+    assert seen == [30]
