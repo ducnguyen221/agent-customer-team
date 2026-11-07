@@ -5,10 +5,11 @@ away from forks, from tool subprocesses, from logs and from kept artifacts."""
 import json
 import re
 import subprocess
-import shutil
 from pathlib import Path
 
 import pytest
+
+from test_skill_commands import find_bash  # skips the WSL launcher in System32, finds Git Bash
 
 ROOT = Path(__file__).resolve().parent.parent
 WORKFLOW = ROOT / ".github" / "workflows" / "eval-behavior.yml"
@@ -163,7 +164,7 @@ def test_canary_graders_tell_scrubbed_from_leaked(reply, ok):
     assert (zero and not long_number) is ok
 
 
-@pytest.mark.skipif(shutil.which("bash") is None or shutil.which("grep") is None, reason="needs bash and grep")
+@pytest.mark.skipif(find_bash() is None, reason="needs a real bash (Git Bash on Windows)")
 @pytest.mark.parametrize("content,patterns,code", [
     ("plain result", "FAKE-SECRET-0000", 0),
     ("has FAKE-SECRET-0000 inside", "FAKE-SECRET-0000", 3),
@@ -176,16 +177,16 @@ def test_scan_script_finds_values_and_key_shapes(tmp_path, content, patterns, co
     (out / "result.json").write_text(content, encoding="utf-8")
     pattern_file = tmp_path / "patterns"
     pattern_file.write_text(patterns + "\n" if patterns else "", encoding="utf-8")
-    done = subprocess.run(["bash", SCAN.as_posix(), out.as_posix(), pattern_file.as_posix()],
+    done = subprocess.run([find_bash(), SCAN.as_posix(), out.as_posix(), pattern_file.as_posix()],
                           capture_output=True, text=True, timeout=30)
     assert done.returncode == code, done.stdout + done.stderr
     assert "FAKE-SECRET-0000" not in done.stdout + done.stderr
 
 
-@pytest.mark.skipif(shutil.which("bash") is None or shutil.which("grep") is None, reason="needs bash and grep")
+@pytest.mark.skipif(find_bash() is None, reason="needs a real bash (Git Bash on Windows)")
 def test_scan_script_fails_when_it_cannot_read(tmp_path):
     empty = tmp_path / "patterns"
     empty.write_text("", encoding="utf-8")
-    done = subprocess.run(["bash", SCAN.as_posix(), (tmp_path / "missing").as_posix(), empty.as_posix()],
+    done = subprocess.run([find_bash(), SCAN.as_posix(), (tmp_path / "missing").as_posix(), empty.as_posix()],
                           capture_output=True, text=True, timeout=30)
     assert done.returncode == 4
