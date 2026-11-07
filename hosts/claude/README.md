@@ -5,12 +5,14 @@
 
 ## 1. Luật
 
-Luật nằm ở `AGENTS.md`; repo cố ý **không** có `CLAUDE.md` (để `claude plugin validate --strict` xanh). Claude Code từ bản
-2.1.277 có thể tự đọc `AGENTS.md`, nhưng chỉ khi thư mục làm việc và mọi thư mục cha đều không có `CLAUDE.md`,
-`.claude/CLAUDE.md` hay `CLAUDE.local.md`, và thiết lập *Project instructions* cho phép. Cách chắc chắn: tạo
-`.claude/CLAUDE.md` trong bản checkout chứa đúng một dòng `@../AGENTS.md` (đường tương đối tính từ file chứa dòng `@`), hoặc
-dùng đường tuyệt đối tới `AGENTS.md` trong `CLAUDE.md` bạn đang dùng. Đừng tạo lại `CLAUDE.md` ở gốc repo. Skill của plugin
-chạy được mà không cần bước này.
+Luật nằm ở `AGENTS.md`; repo cố ý **không** có `CLAUDE.md` (để `claude plugin validate --strict` xanh).
+Cách khuyến nghị duy nhất: trong bản checkout, tạo `.claude/CLAUDE.md` (thư mục `.claude/` đã bị git bỏ qua) chứa
+đúng một dòng `@../AGENTS.md` — đường trong dòng `@` tính từ file chứa nó. Claude Code từ 2.1.277 chỉ tự đọc `AGENTS.md`
+khi thư mục làm việc và mọi thư mục cha không có `CLAUDE.md`, `.claude/CLAUDE.md` hay `CLAUDE.local.md`, và thiết lập
+*Project instructions* cho phép; `~/.claude/CLAUDE.md` của bạn **không** tính, nên nó không chặn việc tự đọc. **Không
+khuyến nghị** dòng `@` với đường tuyệt đối: đặt trong `~/.claude/CLAUDE.md` thì luật của repo này nạp vào **mọi** dự án
+bạn mở; đặt trong `CLAUDE.md` của dự án khác thì Claude Code hỏi duyệt import ngoài lần đầu, từ chối là import bị tắt.
+Đừng tạo lại `CLAUDE.md` ở gốc repo. Skill của plugin chạy được mà không cần bước này.
 
 ## 2. Cài plugin
 

@@ -44,5 +44,5 @@ GitHub Actions chạy bộ test trên Ubuntu, macOS và Windows với Python 3.1
 | `evals/` | ca thử kích hoạt skill; bộ ca kích hoạt cho `claude plugin eval` |
 | `tests/` | test đơn vị, khoá runtime, cổng đóng gói và tài liệu |
 | `.claude-plugin/`, `.codex-plugin/`, `plugin.json` | manifest plugin |
-| `AGENTS.md`, `GEMINI.md` | luật của repo (cố ý không có `CLAUDE.md`; Claude Code chỉ tự đọc `AGENTS.md` khi đủ điều kiện, nên `INSTALL.md` chỉ cách dùng `.claude/CLAUDE.md` chứa `@../AGENTS.md`) |
+| `AGENTS.md`, `GEMINI.md` | luật của repo (cố ý không có `CLAUDE.md`; với Claude Code, cách khuyến nghị duy nhất là `.claude/CLAUDE.md` chứa `@../AGENTS.md`, điều kiện và cảnh báo ở `INSTALL.md`) |
 | `hosts/`, `INSTALL.md` | hướng dẫn cài |

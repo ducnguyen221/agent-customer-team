@@ -64,13 +64,14 @@ Chi tiết lệnh ở trang của host; ở đây chỉ nêu điểm khác nhau.
   không chép, không ghi đè tên trùng — [`hosts/antigravity/README.md`](hosts/antigravity/README.md).
 
 Luật của repo nằm ở `AGENTS.md` (và `GEMINI.md` cho Antigravity). Codex và Antigravity tự nạp khi phiên mở trong thư mục
-repo. Repo cố ý không có `CLAUDE.md` (để `claude plugin validate --strict` xanh). Claude Code từ bản 2.1.277 **có thể** tự
-đọc `AGENTS.md`, nhưng chỉ khi thư mục làm việc và mọi thư mục cha đều không có `CLAUDE.md`, `.claude/CLAUDE.md` hay
-`CLAUDE.local.md`, và thiết lập *Project instructions* cho phép — đừng mặc định là đã nạp. Cách chắc chắn: trong bản
-checkout, tạo `.claude/CLAUDE.md` (thư mục `.claude/` đã bị git bỏ qua) chứa đúng một dòng `@../AGENTS.md`; hoặc thêm vào
-`CLAUDE.md` bạn đang dùng một dòng `@` với **đường tuyệt đối** tới `AGENTS.md` của repo. Đường tương đối trong dòng `@`
-tính từ file chứa nó, nên `@AGENTS.md` đặt trong `~/.claude/CLAUDE.md` không trỏ tới repo. Đừng tạo lại `CLAUDE.md` ở gốc
-repo. Plugin không đòi sửa file luật cấp người dùng.
+repo. Repo cố ý không có `CLAUDE.md` (để `claude plugin validate --strict` xanh).
+Cách khuyến nghị duy nhất: trong bản checkout, tạo `.claude/CLAUDE.md` (thư mục `.claude/` đã bị git bỏ qua) chứa
+đúng một dòng `@../AGENTS.md` — đường trong dòng `@` tính từ file chứa nó. Claude Code từ 2.1.277 chỉ tự đọc `AGENTS.md`
+khi thư mục làm việc và mọi thư mục cha không có `CLAUDE.md`, `.claude/CLAUDE.md` hay `CLAUDE.local.md`, và thiết lập
+*Project instructions* cho phép; `~/.claude/CLAUDE.md` của bạn **không** tính, nên nó không chặn việc tự đọc. **Không
+khuyến nghị** dòng `@` với đường tuyệt đối: đặt trong `~/.claude/CLAUDE.md` thì luật của repo này nạp vào **mọi** dự án
+bạn mở; đặt trong `CLAUDE.md` của dự án khác thì Claude Code hỏi duyệt import ngoài lần đầu, từ chối là import bị tắt.
+Đừng tạo lại `CLAUDE.md` ở gốc repo. Plugin không đòi sửa file luật cấp người dùng.
 
 ## 5. Kiểm
 
