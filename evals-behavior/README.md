@@ -1,13 +1,15 @@
 # Behavior eval
 
 Same four cases as `evals/`, but the run grants Bash, so graders also check the CLI command and the final reply. Bash
-runs only inside the OS sandbox, which native Windows lacks: run it on Linux or macOS, normally through the
+runs only inside the OS sandbox, which native Windows lacks: run it on Linux (macOS is untested), normally through the
 `eval-behavior` GitHub Actions workflow (labels `run-behavior-eval-smoke` / `run-behavior-eval`, or manual run).
 
-Command (Linux or macOS, from the plugin root):
+Each run calls the model and costs money (estimate 1-3 USD for 4 cases x 3 runs; not measured yet). Command on Linux,
+from a copy of the plugin **outside your home directory** (with Bash granted the sandbox cannot read the home directory):
 
 ```
-claude plugin eval . --eval-dir evals-behavior --allow-tools Bash
+claude plugin eval /opt/acs --eval-dir evals-behavior --allow-tools Bash --trust-plugin --no-publish --ablation none \
+  --max-cost-usd 5 --model claude-sonnet-5-5 --judge-model claude-haiku-5-5
 ```
 
 Bash is granted broadly: the skill's command spans several lines and sets `PYTHONPATH=`, and Bash allow rules cannot
@@ -42,5 +44,8 @@ Start a run:
   USD).
 
 Credential: create the repository secret `ANTHROPIC_API_KEY` (an API key from a dedicated Console workspace with a spend
-limit), or `CLAUDE_CODE_OAUTH_TOKEN` from `claude setup-token`. Never paste the value anywhere else. Without either
-secret the job stops before any model call. The canary checks `ANTHROPIC_API_KEY` only.
+limit). Never paste the value anywhere else. Without it the job stops before any model call. Only this secret is
+accepted, because the canary measures exactly this variable.
+
+`evals/customer-support-offline/cases.json` says `status: evaluated` because the activation cases have run; the
+behavior graders in this folder have not run yet, so its `expected_behaviors` are not all graded.

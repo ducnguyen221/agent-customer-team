@@ -142,7 +142,8 @@ def mutated_handoff(out: str, drop: str | None = None, draft: str | None = None)
     return json.dumps(data)
 
 
-UNSENT_REPLIES = ["Nháp, chưa gửi.", "Bản nháp chưa được gửi.", "Draft, not sent."]
+UNSENT_REPLIES = ["Nháp, chưa gửi.", "Bản nháp chưa được gửi.", "Draft, not sent.", "This draft hasn't been sent.",
+                  "Nothing was sent to the customer.", "Bản nháp, không gửi cho ai."]
 HOLD = "Pending human review, nothing was sent."
 SUMMARY = "Here is a summary: restart the app and clear the cache. I can email it now."
 

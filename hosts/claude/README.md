@@ -6,7 +6,8 @@
 ## 1. Luật
 
 Luật nằm ở `AGENTS.md`; repo cố ý **không** có `CLAUDE.md` (để `claude plugin validate --strict` xanh).
-Cách khuyến nghị duy nhất: trong bản checkout, tạo `.claude/CLAUDE.md` (thư mục `.claude/` đã bị git bỏ qua) chứa
+Bước này tuỳ chọn và chỉ có tác dụng khi phiên Claude Code mở trong bản checkout (skill của plugin chạy được cả
+khi không làm). Cách khuyến nghị duy nhất: trong bản checkout, tạo `.claude/CLAUDE.md` (thư mục `.claude/` đã bị git bỏ qua) chứa
 đúng một dòng `@../AGENTS.md` — đường trong dòng `@` tính từ file chứa nó. Claude Code từ 2.1.277 chỉ tự đọc `AGENTS.md`
 khi thư mục làm việc và mọi thư mục cha không có `CLAUDE.md`, `.claude/CLAUDE.md` hay `CLAUDE.local.md`, và thiết lập
 *Project instructions* cho phép; `~/.claude/CLAUDE.md` của bạn **không** tính, nên nó không chặn việc tự đọc. **Không

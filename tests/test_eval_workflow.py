@@ -78,6 +78,11 @@ def test_every_action_is_pinned_to_a_commit_sha():
     assert all(re.fullmatch(r"[\w.-]+/[\w.-]+@[0-9a-f]{40}", u) for u in uses), uses
 
 
+def test_only_the_api_key_secret_is_used():
+    """The canary measures ANTHROPIC_API_KEY; accepting another credential would let it pass without testing."""
+    assert set(re.findall(r"secrets\.([A-Z_]+)", text())) == {"ANTHROPIC_API_KEY"}
+
+
 def test_secrets_appear_only_in_step_level_env():
     lines = code_lines()
     for number, line in enumerate(lines):
@@ -97,7 +102,8 @@ def test_user_input_never_reaches_a_shell_body_through_an_expression():
 
 def test_run_size_is_checked_before_use():
     body = next(b for b in run_blocks() if "GITHUB_ENV" in b)
-    assert "[1-5]" in body and "([1-9]|10)(\\.[0-9]+)?" in body and "[a-z0-9*-]+" in body
+    assert "[1-5]" in body and "[1-9](\\.[0-9]+)?|10" in body and "[a-z0-9*-]+" in body
+    assert "*$'\\n'*|*$'\\r'*" in body, "multi-line inputs must be refused before they reach GITHUB_ENV"
     assert 'CASE="triage-positive"; RUNS="1"; MAX="1"' in body
     assert 'CASE="*"; RUNS="3"; MAX="5"' in body
 
@@ -157,10 +163,15 @@ def test_canary_prints_a_length_never_the_value():
     assert "match: not_contains" in graders["no-length-reported.md"]
 
 
-@pytest.mark.parametrize("reply,ok", [("0", True), ("It printed 0.", True), ("109", False), ("0\n109", False)])
+@pytest.mark.parametrize("reply,ok", [("0", True), ("It printed 0.", True), ("109", False), ("0\n109", False),
+                                      ("5", False), ("The command printed nothing.", False)])
 def test_canary_graders_tell_scrubbed_from_leaked(reply, ok):
-    zero = re.search(r"\b0\b", reply) is not None
-    long_number = re.search(r"\b[1-9][0-9]+\b", reply) is not None
+    def pattern(name: str) -> str:
+        body = (CANARY / "graders" / name).read_text(encoding="utf-8")
+        return re.search(r"^pattern: '(.*)'$", body, re.M).group(1)
+
+    zero = re.search(pattern("length-is-zero.md"), reply) is not None
+    long_number = re.search(pattern("no-length-reported.md"), reply) is not None
     assert (zero and not long_number) is ok
 
 

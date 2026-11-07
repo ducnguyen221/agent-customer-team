@@ -34,7 +34,8 @@ python -m pytest
 Không cần đặt biến môi trường; `pyproject.toml` đã đưa `src` vào đường nạp. `pytest-cov` là tuỳ chọn, để đo coverage; khi dùng thì đặt `COVERAGE_FILE` trỏ ra ngoài cây repo để không có file `.coverage` rơi vào repo.
 
 GitHub Actions chạy bộ test trên Ubuntu, macOS và Windows với Python 3.11, 3.12 và 3.13 (`.github/workflows/ci.yml`).
-Eval hành vi chạy riêng, khởi động tay hoặc bằng nhãn trên pull request, chấm skill với Bash trong sandbox
+Eval hành vi chạy riêng, khởi động tay hoặc bằng nhãn trên pull request, chấm skill với Bash trong sandbox; nó gọi
+model, tốn tiền và cần secret `ANTHROPIC_API_KEY` của repo
 (`.github/workflows/eval-behavior.yml`, xem `evals-behavior/README.md`).
 
 ## Cấu trúc
@@ -44,7 +45,7 @@ Eval hành vi chạy riêng, khởi động tay hoặc bằng nhãn trên pull r
 | `src/agent_customer_team/` | công cụ ngoại tuyến (chỉ thư viện chuẩn) |
 | `skills/customer-support-offline/` | skill bọc công cụ |
 | `evals/` | ca thử kích hoạt skill; bộ ca kích hoạt cho `claude plugin eval` |
-| `evals-behavior/`, `evals-scrub/` | bộ ca hành vi (cấp Bash, chạy trên Linux hoặc macOS) và ca canary kiểm lọc secret |
+| `evals-behavior/`, `evals-scrub/` | bộ ca hành vi (cấp Bash, chạy trên Linux; macOS chưa thử) và ca canary kiểm lọc secret |
 | `tests/` | test đơn vị, khoá runtime, cổng đóng gói và tài liệu |
 | `.claude-plugin/`, `.codex-plugin/`, `plugin.json` | manifest plugin |
 | `AGENTS.md`, `GEMINI.md` | luật của repo (cố ý không có `CLAUDE.md`; với Claude Code, cách khuyến nghị duy nhất là `.claude/CLAUDE.md` chứa `@../AGENTS.md`, điều kiện và cảnh báo ở `INSTALL.md`) |

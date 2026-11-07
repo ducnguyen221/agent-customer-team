@@ -37,13 +37,19 @@ def text_files():
             yield path
 
 
-def test_no_raw_invisible_characters():
+def hidden_characters(paths) -> list[str]:
+    """`path:line U+XXXX` for every raw hidden character; a file that is not UTF-8 raises instead of being skipped."""
     found = []
-    for path in text_files():
+    for path in paths:
         for number, line in enumerate(path.read_text(encoding="utf-8").split("\n"), 1):
             codes = sorted({"U+%04X" % ord(c) for c in line if hidden(c)})
             if codes:
-                found.append(f"{path.relative_to(ROOT).as_posix()}:{number} {' '.join(codes)}")
+                found.append(f"{path.as_posix()}:{number} {' '.join(codes)}")
+    return found
+
+
+def test_no_raw_invisible_characters():
+    found = hidden_characters(text_files())
     assert found == [], "write these characters as escapes: " + "; ".join(found)
 
 
@@ -67,11 +73,14 @@ def test_text_files_follow_git_when_available(monkeypatch):
 
 
 def test_undecodable_tracked_text_fails(tmp_path):
-    """A text file with bytes that are not UTF-8 must raise, never be skipped silently."""
+    """The scan used by the repository check raises on a file that is not UTF-8, never skips it silently."""
+    good = tmp_path / "good.md"
+    good.write_bytes(b"ok\n")
     bad = tmp_path / "bad.md"
     bad.write_bytes(b"ok \xff\n")
+    assert hidden_characters([good]) == []
     with pytest.raises(UnicodeDecodeError):
-        bad.read_text(encoding="utf-8")
+        hidden_characters([good, bad])
 
 
 def test_no_stale_no_remote_wording():
