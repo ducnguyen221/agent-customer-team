@@ -1,0 +1,12 @@
+# Test and coverage configuration only; the repository is not a pip package.
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q -p no:cacheprovider"
+
+[tool.coverage.run]
+source = ["agent_customer_team"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 80

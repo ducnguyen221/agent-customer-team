@@ -17,3 +17,5 @@ output/
 *.credentials.json
 auth.json
 oauth_creds.json
+.tmp/
+.claude/
