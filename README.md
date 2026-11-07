@@ -21,8 +21,8 @@ Python 3.11 or newer is required; the runtime uses only the standard library.
 ## Install
 
 Give the prompt at the end of [INSTALL.md](INSTALL.md) to your agent; it follows that file and asks before it touches
-anything. Per-harness steps: [hosts/](hosts/README.md). The repository has no remote yet, so install from a local
-checkout.
+anything. Per-harness steps: [hosts/](hosts/README.md). Install from a local checkout of the
+repository (the recommended path, also the one an installing agent uses).
 
 ## Test
 

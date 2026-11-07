@@ -8,6 +8,8 @@ from pathlib import Path
 
 import pytest
 
+from case_helpers import run_git, tracked_files
+
 ROOT = Path(__file__).resolve().parent.parent
 MANIFESTS = ["plugin.json", ".claude-plugin/plugin.json", ".codex-plugin/plugin.json"]
 REQUIRED = ["name", "version", "description", "license", "author"]
@@ -103,32 +105,6 @@ def test_forbidden_detector_catches_its_targets():
     more = ["auth.json", "sub/oauth_creds.json", "output/result.json", "x/output/y.txt"]
     assert forbidden_tracked(more) == more
     assert forbidden_tracked(["outputs/a.md", "src/output.py"]) == []
-
-
-def run_git(*args: str, **kwargs) -> subprocess.CompletedProcess:
-    """Run git with a hard timeout; a hang fails the test instead of blocking it."""
-    try:
-        return subprocess.run(["git", *args], capture_output=True, timeout=30, **kwargs)
-    except subprocess.TimeoutExpired:
-        pytest.fail("git " + " ".join(args) + " timed out after 30 s")
-
-
-def tracked_files(root: Path) -> list[str] | None:
-    """Tracked paths of the git repository rooted exactly at root; None when git or such a repository is missing."""
-    if shutil.which("git") is None:
-        return None
-    try:
-        probe = run_git("-C", str(root), "rev-parse", "--is-inside-work-tree", text=True)
-        inside = probe.returncode == 0 and probe.stdout.strip() == "true"
-        if inside:  # a plain copy placed inside another work tree is not this repository
-            top = run_git("-C", str(root), "rev-parse", "--show-toplevel", text=True).stdout.strip()
-            inside = bool(top) and Path(top).resolve() == root.resolve()
-        if not inside:
-            return None
-        listed = run_git("-C", str(root), "ls-files", "-z", text=True, encoding="utf-8", check=True).stdout
-    except (OSError, subprocess.SubprocessError):
-        return None
-    return [p for p in listed.split("\0") if p]
 
 
 def test_records_and_secrets_not_tracked():

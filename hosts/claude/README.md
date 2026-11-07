@@ -16,7 +16,7 @@ bạn mở; đặt trong `CLAUDE.md` của dự án khác thì Claude Code hỏi
 
 ## 2. Cài plugin
 
-Repo chưa có remote; dùng bản checkout cục bộ (`<plugin-root>`):
+Cài từ bản checkout cục bộ của repo (đường khuyến nghị; agent cài cũng đi đường này), `<plugin-root>`:
 
 ```bash
 claude plugin marketplace add <plugin-root>

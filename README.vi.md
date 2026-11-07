@@ -21,7 +21,7 @@ Cần Python 3.11 trở lên; phần chạy chỉ dùng thư viện chuẩn.
 ## Cài
 
 Đưa prompt ở cuối [INSTALL.md](INSTALL.md) cho agent; agent làm theo file đó và hỏi trước khi chạm máy. Các bước theo
-từng harness: [hosts/](hosts/README.md). Repo chưa có remote nên cài từ bản checkout cục bộ.
+từng harness: [hosts/](hosts/README.md). Cài từ bản checkout cục bộ của repo (đường khuyến nghị; agent cài cũng đi đường này).
 
 ## Kiểm thử
 

@@ -49,7 +49,8 @@ Trên Windows, `python` mở Microsoft Store nghĩa là máy chưa có Python th
 
 ## 3. Lấy mã
 
-Repo chưa có remote. Dùng bản checkout có sẵn mà người dùng chỉ; không tự suy ra địa chỉ clone, không tạo remote. Nếu
+Cài từ bản checkout cục bộ của repo (đường khuyến nghị; agent cài cũng đi đường này).
+Dùng bản checkout có sẵn mà người dùng chỉ; không tự suy ra địa chỉ clone, không tạo remote. Nếu
 người dùng đã có bản checkout cũ, chỉ cập nhật khi họ yêu cầu và không reset hay stash thay họ.
 
 ## 4. Cài theo host
@@ -112,7 +113,7 @@ chỉ báo những mốc đã đo.
 
 ```text
 Cài agent-customer-team cho tôi. Đọc và làm theo đúng file INSTALL.md
-của bản checkout repo agent-customer-team mà tôi chỉ (repo chưa có remote).
+của bản checkout repo agent-customer-team mà tôi chỉ (cài từ bản checkout cục bộ, đường khuyến nghị).
 Trước khi cài phần mềm, sửa file luật của harness, đặt biến môi trường
 hay tạo liên kết thư mục, hãy nói rõ bạn sẽ làm gì và chờ tôi đồng ý.
 Không mở file bí mật, không tải-rồi-chạy. Cài xong, chạy

@@ -5,7 +5,7 @@
 Chưa phát hành.
 
 - SPR-04 chữ import Claude Code (RQ-014): làm rõ mục SPR-03 luật repo bên dưới. Tài liệu chỉ một cách khuyến nghị, `.claude/CLAUDE.md` chứa `@../AGENTS.md`; nói rõ `~/.claude/CLAUDE.md` không chặn việc Claude Code tự đọc `AGENTS.md`, và cảnh báo dòng `@` đường tuyệt đối (trong `~/.claude/CLAUDE.md` thì luật repo vào mọi dự án; trong `CLAUDE.md` dự án khác thì Claude Code hỏi duyệt import ngoài). Test chữ phủ 5 file.
-- SPR-04 vệ sinh (RQ-015): `ci.yml` chạy một lần mỗi sự kiện (`push` chỉ trên `main` và tag `v*`, cộng `pull_request` và chạy tay); `cases.json` có `status: evaluated`; test vệ sinh chữ quét file git theo dõi; bỏ câu "chưa có remote" ở tài liệu cài.
+- SPR-04 vệ sinh (RQ-015): `ci.yml` chạy một lần mỗi sự kiện (`push` chỉ trên `main` và tag `v*`, cộng `pull_request` và chạy tay); `cases.json` có `status: evaluated`; test vệ sinh chữ quét file git theo dõi; bỏ câu cũ về remote ở tài liệu cài.
 
 - SPR-03 stdout: ký tự nhóm Unicode `Cc`, `Cf`, `Zl`, `Zp`, `Cs`, `Cn` được thoát `\uXXXX` trước khi ghi; giá trị JSON giải mã không đổi, byte của đầu vào thường không đổi.
 - SPR-03 gói chuyển người: `handoff` có thêm `case_id`, `topic`, `intent`, `message`, `attempted_steps`, `evidence` (metadata `{id, product_version, locator, sha256}` của tài liệu đủ điều kiện, chỉ khi lý do là `conflicting_knowledge`, không kèm `answer`); `schema_version` vẫn `"1"`.

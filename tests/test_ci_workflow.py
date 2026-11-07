@@ -84,3 +84,14 @@ def test_lock_file_is_hashed_and_names_the_two_test_tools():
     for entry in entries:
         assert re.search(r"^\s+--hash=sha256:[0-9a-f]{64}", entry, re.M), entry.splitlines()[0]
     assert not re.search(r"^(?:git\+|https?://|-e )", body, re.M)
+
+
+def test_ci_runs_once_per_event():
+    """RQ-015: a PR commit must not start `ci` twice; push is limited to main and v* tags."""
+    text = "\n".join(code_lines())
+    block = re.search(r"^on:\n((?:[ \t]+.*\n?)+)", text + "\n", re.M).group(1)
+    push = re.search(r"^  push:\n((?:    .*\n?)+)", block, re.M)
+    assert push, "push must carry filters"
+    body = push.group(1)
+    assert re.search(r"^    branches: \[main\]$", body, re.M), body
+    assert re.search(r"^    tags: \['v\*'\]$", body, re.M), body
