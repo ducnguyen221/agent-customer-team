@@ -1,0 +1,46 @@
+# agent-customer-team
+
+> Phiên bản `0.1.0`, chưa phát hành. Bản tiếng Anh: [README.md](README.md).
+
+## Đây là gì
+
+Prototype hỗ trợ khách hàng chạy cục bộ, kết quả xác định, dành cho ca hỗ trợ **tổng hợp**. Công cụ kiểm ba file JSON
+đầu vào (context, payload, knowledge), chọn tri thức đã duyệt trong dữ liệu thử, rồi trả một nháp trích nguyên văn hoặc
+một gói chuyển người đang chờ. Repo đồng thời là plugin OpcOS: skill `customer-support-offline` bọc công cụ dòng lệnh cho
+Claude Code, Codex và Antigravity. Chi tiết công cụ: [hướng dẫn ngoại tuyến](docs/offline-guide.md) (tiếng Anh).
+
+## Giới hạn
+
+- Chỉ dữ liệu tổng hợp; không dùng dữ liệu khách thật.
+- Không mạng, không LLM, không CRM, không gửi tin; nháp không bao giờ được gửi và gói chuyển không bao giờ được nhận.
+- Chưa sẵn sàng production: không bảo đảm riêng tư hay phân quyền tenant ở mức production.
+- Giấy phép chưa chọn: plugin khai `UNLICENSED` (giữ mọi quyền) cho tới khi chủ sở hữu quyết.
+
+Cần Python 3.11 trở lên; phần chạy chỉ dùng thư viện chuẩn.
+
+## Cài
+
+Đưa prompt ở cuối [INSTALL.md](INSTALL.md) cho agent; agent làm theo file đó và hỏi trước khi chạm máy. Các bước theo
+từng harness: [hosts/](hosts/README.md). Repo chưa có remote nên cài từ bản checkout cục bộ.
+
+## Kiểm thử
+
+Từ gốc repo:
+
+```bash
+python -m pytest
+```
+
+Không cần đặt biến môi trường; `pyproject.toml` đã đưa `src` vào đường nạp. `pytest-cov` là tuỳ chọn, để đo coverage.
+
+## Cấu trúc
+
+| Đường | Nội dung |
+|---|---|
+| `src/agent_customer_team/` | công cụ ngoại tuyến (chỉ thư viện chuẩn) |
+| `skills/customer-support-offline/` | skill bọc công cụ |
+| `evals/` | ca thử kích hoạt skill (chưa chạy) |
+| `tests/` | test đơn vị, khoá runtime, cổng đóng gói và tài liệu |
+| `.claude-plugin/`, `.codex-plugin/`, `plugin.json` | manifest plugin |
+| `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` | luật của repo |
+| `hosts/`, `INSTALL.md` | hướng dẫn cài |

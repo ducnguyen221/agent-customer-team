@@ -102,7 +102,7 @@ def test_skip_dirs_ignored(tmp_path):
 def test_scanner_sees_the_repo():
     seen = {p.relative_to(ROOT).as_posix() for p in distributable_files(ROOT)}
     for must in ("README.md", "pyproject.toml", ".gitignore", "LICENSE",
-                 "skills/customer-support-offline/SKILL.md"):
+                 "skills/customer-support-offline/SKILL.md", "hosts/codex/README.md"):
         assert must in seen, f"gate does not see {must}"
 
 
