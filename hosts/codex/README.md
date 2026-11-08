@@ -9,7 +9,7 @@ Phiên mở trong thư mục repo: Codex đọc `AGENTS.md` ở gốc theo chu�
 
 ## 2. Cài plugin
 
-Repo chưa có remote; dùng bản checkout cục bộ (`<plugin-root>`). Lệnh plugin của Codex khác nhau theo phiên bản — xem
+Cài từ bản checkout cục bộ của repo (đường khuyến nghị; agent cài cũng đi đường này), `<plugin-root>`. Lệnh plugin của Codex khác nhau theo phiên bản — xem
 `codex plugin --help` trên máy trước.
 
 ```bash

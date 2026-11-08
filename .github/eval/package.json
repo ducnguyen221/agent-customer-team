@@ -1,0 +1,8 @@
+{
+  "name": "behavior-eval-tools",
+  "private": true,
+  "description": "Pinned Claude Code CLI for the behavior-eval workflow only; not part of the plugin.",
+  "dependencies": {
+    "@anthropic-ai/claude-code": "2.1.310"
+  }
+}

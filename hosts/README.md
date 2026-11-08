@@ -8,7 +8,7 @@
 
 | Bạn chạy trong | Luật nạp bằng | Skill nạp bằng | Hướng dẫn |
 |---|---|---|---|
-| Claude Code (terminal, IDE, tab Code của ứng dụng Claude) | repo không có `CLAUDE.md`; bản ≥ 2.1.277 có thể tự đọc `AGENTS.md` khi cây thư mục không có `CLAUDE.md` nào — chắc chắn nhất là `.claude/CLAUDE.md` chứa `@../AGENTS.md` | plugin `.claude-plugin/` | [claude/README.md](claude/README.md) |
+| Claude Code (terminal, IDE, tab Code của ứng dụng Claude) | repo không có `CLAUDE.md`; cách khuyến nghị: `.claude/CLAUDE.md` chứa `@../AGENTS.md` (điều kiện và cảnh báo ở claude/README.md) | plugin `.claude-plugin/` | [claude/README.md](claude/README.md) |
 | Codex (CLI hoặc ứng dụng desktop) | tự đọc `AGENTS.md` theo chuỗi thư mục | plugin `.codex-plugin/` | [codex/README.md](codex/README.md) |
 | Google Antigravity | tự đọc `AGENTS.md` và `GEMINI.md` của workspace | liên kết thư mục skill vào thư mục skill của Antigravity | [antigravity/README.md](antigravity/README.md) |
 | Claude Desktop, tab chat | **chưa hỗ trợ** | — | [claude-desktop/README.md](claude-desktop/README.md) |

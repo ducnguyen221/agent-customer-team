@@ -1,0 +1,1 @@
+{"documents":[{"id":"guide-1","tenant_id":"tenant-demo","product":"demo-app","product_version":"v1","topic":"restart","status":"approved","acl":["support"],"effective_from":"2026-01-01","expires_at":"2026-12-31","locator":"guide-1","answer":"Restart the application. If the problem continues, clear the app cache in Settings, then sign in again."}]}

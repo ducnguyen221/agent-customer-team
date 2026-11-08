@@ -59,7 +59,7 @@ def test_sections_present():
 def test_eval_cases_shape():
     data = json.loads(CASES.read_text(encoding="utf-8"))
     assert data["skill"] == "customer-support-offline"
-    assert data["status"] == "draft"
+    assert data["status"] == "evaluated"
     assert data["baseline"] == "not_run"
     cases = {c["id"]: c for c in data["cases"]}
     assert len(data["cases"]) == 4

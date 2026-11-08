@@ -1,0 +1,179 @@
+name: eval-behavior
+
+# Behavior eval: runs the plugin's skill with Bash granted, inside the OS sandbox, and grades the CLI command and the
+# final reply. It costs money and needs a repository secret, so it never runs on its own: start it by hand, or label a
+# pull request opened from this repository (pull requests from forks are skipped and never see the secret).
+on:
+  workflow_dispatch:
+    inputs:
+      case:
+        description: "Case name glob (letters, digits, '-', '*')"
+        default: "*"
+      runs:
+        description: "Runs per case (1-5)"
+        default: "3"
+      max_cost_usd:
+        description: "Cost ceiling in USD (1-10)"
+        default: "5"
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eval-behavior-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  eval:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       (github.event.label.name == 'run-behavior-eval-smoke' || github.event.label.name == 'run-behavior-eval'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      EVENT: ${{ github.event_name }}
+      LABEL: ${{ github.event.label.name }}
+      INPUT_CASE: ${{ inputs.case }}
+      INPUT_RUNS: ${{ inputs.runs }}
+      INPUT_MAX: ${{ inputs.max_cost_usd }}
+      EVAL_MODEL: claude-sonnet-5-5
+      JUDGE_MODEL: claude-haiku-5-5
+    steps:
+      - name: Choose and check the run size
+        run: |
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            CASE="$INPUT_CASE"; RUNS="$INPUT_RUNS"; MAX="$INPUT_MAX"
+          elif [ "$LABEL" = "run-behavior-eval-smoke" ]; then
+            CASE="triage-positive"; RUNS="1"; MAX="1"
+          else
+            CASE="*"; RUNS="3"; MAX="5"
+          fi
+          case "$RUNS$MAX$CASE" in *$'\n'*|*$'\r'*) echo "::error::inputs must be single-line"; exit 1 ;; esac
+          printf '%s\n' "$RUNS" | grep -Eqx '[1-5]' || { echo "::error::runs must be 1-5"; exit 1; }
+          printf '%s\n' "$MAX" | grep -Eqx '[1-9](\.[0-9]+)?|10' || { echo "::error::max_cost_usd must be 1-10"; exit 1; }
+          printf '%s\n' "$CASE" | grep -Eqx '[a-z0-9*-]+' || { echo "::error::case may hold only a-z, 0-9, '-' and '*'"; exit 1; }
+          { echo "CASE=$CASE"; echo "RUNS=$RUNS"; echo "MAX=$MAX"; } >> "$GITHUB_ENV"
+          echo "case=$CASE runs=$RUNS max_cost_usd=$MAX"
+
+      - name: Check that the credential secret exists
+        # Only ANTHROPIC_API_KEY is accepted: the scrub canary measures exactly that variable, so a run authenticated
+        # another way would pass the canary without testing anything.
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::Create the repository secret ANTHROPIC_API_KEY; see evals-behavior/README.md. No model was called."
+            exit 1
+          fi
+          echo "The credential secret is set."
+
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Prepare the OS sandbox (bubblewrap, socat, user namespaces)
+        run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          sudo apt-get update -q
+          sudo apt-get install -y -q bubblewrap socat
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+
+      - name: Install the pinned Claude Code CLI from the lock file
+        # The package's postinstall (install.cjs) places the binary of its platform package; both are pinned by
+        # integrity in .github/eval/package-lock.json and have no other dependencies.
+        run: |
+          npm ci --prefix .github/eval --no-fund
+          npm audit signatures --prefix .github/eval
+          echo "$GITHUB_WORKSPACE/.github/eval/node_modules/.bin" >> "$GITHUB_PATH"
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Copy the tracked plugin files outside the home directory
+        # With Bash granted, the eval sandbox cannot read the home directory, where the checkout lives.
+        run: |
+          sudo install -d -o "$USER" /opt/acs
+          git archive HEAD | tar -x -C /opt/acs
+          mkdir -p out
+          claude --version | tee out/claude-version.txt
+          set +e
+          claude plugin list --json > out/plugins-before.json 2> out/plugins-before.err
+          echo "plugin list exit $?" >> out/plugins-before.err
+
+      - name: Canary - Bash commands must not see the credential
+        id: canary
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: "1"
+        run: |
+          set +e
+          mkdir -p out/scrub
+          claude plugin eval /opt/acs --eval-dir evals-scrub --trust-plugin --no-publish --ablation none --runs 1 \
+            --max-cost-usd 0.5 --model "$EVAL_MODEL" --judge-model "$JUDGE_MODEL" --allow-tools Bash \
+            --json out/scrub/result.json --report out/scrub/report.html --output-dir out/scrub
+          code=$?
+          echo "exit=$code" >> "$GITHUB_OUTPUT"
+          echo "canary exit $code"
+
+      - name: Behavior eval
+        id: eval
+        if: steps.canary.outputs.exit == '0'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: "1"
+        run: |
+          set +e
+          mkdir -p out/behavior
+          claude plugin eval /opt/acs --eval-dir evals-behavior --trust-plugin --no-publish --ablation none \
+            --runs "$RUNS" --case "$CASE" --max-cost-usd "$MAX" -j 3 --model "$EVAL_MODEL" --judge-model "$JUDGE_MODEL" \
+            --allow-tools Bash --json out/result.json --report out/report.html --output-dir out/behavior
+          code=$?
+          echo "exit=$code" >> "$GITHUB_OUTPUT"
+          echo "eval exit $code (exit 1 can mean a case scored under the default threshold 1.0; read out/result.json)"
+
+      - name: Scan results for the credential before keeping them
+        id: scan
+        if: always()
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set +e
+          if [ ! -d out ]; then echo "No results to scan."; exit 0; fi
+          umask 077
+          patterns="$RUNNER_TEMP/credential-patterns"
+          : > "$patterns"
+          if [ -n "$ANTHROPIC_API_KEY" ]; then printf '%s\n' "$ANTHROPIC_API_KEY" >> "$patterns"; fi
+          bash .github/eval/scan.sh out "$patterns"
+          code=$?
+          rm -f "$patterns"
+          if [ "$code" -ne 0 ]; then rm -rf out; fi
+          exit "$code"
+
+      - name: Keep the results
+        if: always() && steps.scan.outcome == 'success'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: eval-behavior-results
+          path: out/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Report the eval outcome
+        if: always()
+        env:
+          CANARY_EXIT: ${{ steps.canary.outputs.exit }}
+          EVAL_EXIT: ${{ steps.eval.outputs.exit }}
+        run: |
+          echo "canary exit: ${CANARY_EXIT:-not run}; eval exit: ${EVAL_EXIT:-not run}"
+          if [ "$CANARY_EXIT" != "0" ]; then echo "::error::Canary failed or did not run: Bash may see the credential."; exit 1; fi
+          exit "${EVAL_EXIT:-1}"

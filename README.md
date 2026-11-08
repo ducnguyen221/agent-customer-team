@@ -1,6 +1,6 @@
 # agent-customer-team
 
-> Version `0.2.0`, not released. Vietnamese version: [README.vi.md](README.vi.md).
+> Version `0.3.0`, not released. Vietnamese version: [README.vi.md](README.vi.md).
 
 ## What it is
 
@@ -21,8 +21,8 @@ Python 3.11 or newer is required; the runtime uses only the standard library.
 ## Install
 
 Give the prompt at the end of [INSTALL.md](INSTALL.md) to your agent; it follows that file and asks before it touches
-anything. Per-harness steps: [hosts/](hosts/README.md). The repository has no remote yet, so install from a local
-checkout.
+anything. Per-harness steps: [hosts/](hosts/README.md). Install from a local checkout of the
+repository (the recommended path, also the one an installing agent uses).
 
 ## Test
 
@@ -35,6 +35,9 @@ python -m pytest
 No environment variable is needed; `pyproject.toml` puts `src` on the path. `pytest-cov` is optional, for coverage; when you use it, point `COVERAGE_FILE` at a path outside the tree so no `.coverage` file lands in the repository.
 
 GitHub Actions runs the suite on Ubuntu, macOS and Windows with Python 3.11, 3.12 and 3.13 (`.github/workflows/ci.yml`).
+A separate behavior eval, started by hand or by a pull-request label, grades the skill with Bash in a sandbox; it
+calls the model, costs money and needs the repository secret `ANTHROPIC_API_KEY`
+(`.github/workflows/eval-behavior.yml`, see `evals-behavior/README.md`).
 
 ## Layout
 
@@ -43,7 +46,8 @@ GitHub Actions runs the suite on Ubuntu, macOS and Windows with Python 3.11, 3.1
 | `src/agent_customer_team/` | the offline tool (standard library only) |
 | `skills/customer-support-offline/` | the skill that wraps the tool |
 | `evals/` | trigger cases for the skill; activation suite for `claude plugin eval` |
+| `evals-behavior/`, `evals-scrub/` | behavior suite (Bash granted, Linux; macOS untested) and its credential-scrub canary |
 | `tests/` | unit tests, runtime lock, packaging and documentation gates |
 | `.claude-plugin/`, `.codex-plugin/`, `plugin.json` | plugin manifests |
-| `AGENTS.md`, `GEMINI.md` | repository rules (no `CLAUDE.md` by design; Claude Code reads `AGENTS.md` only under conditions, so `INSTALL.md` shows a `.claude/CLAUDE.md` with `@../AGENTS.md`) |
+| `AGENTS.md`, `GEMINI.md` | repository rules (no `CLAUDE.md` by design; for Claude Code the one recommended way is a `.claude/CLAUDE.md` containing `@../AGENTS.md`, with conditions and warnings in `INSTALL.md`) |
 | `hosts/`, `INSTALL.md` | install guides |

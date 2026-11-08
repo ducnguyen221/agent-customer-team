@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0
+
+Chưa phát hành.
+
+- SPR-04 eval hành vi (RQ-013): `evals-behavior/` (4 ca, chấm lệnh CLI và câu trả lời cuối, cấp Bash trong sandbox) và
+  workflow `eval-behavior` chạy tay hoặc bằng nhãn trên PR cùng repo; secret `ANTHROPIC_API_KEY` chỉ ở env từng bước, lệnh
+  Bash chạy với env đã lọc và ca canary `evals-scrub/` kiểm điều đó trước; kết quả được quét tìm secret trước khi giữ 7
+  ngày; Claude Code ghim bằng lockfile có `integrity`. Mỗi lần chạy tốn tiền; chưa chạy thật.
+- SPR-04 chữ import Claude Code (RQ-014): làm rõ mục SPR-03 luật repo bên dưới. Tài liệu chỉ một cách khuyến nghị, `.claude/CLAUDE.md` chứa `@../AGENTS.md`; nói rõ `~/.claude/CLAUDE.md` không chặn việc Claude Code tự đọc `AGENTS.md`, và cảnh báo dòng `@` đường tuyệt đối (trong `~/.claude/CLAUDE.md` thì luật repo vào mọi dự án; trong `CLAUDE.md` dự án khác thì Claude Code hỏi duyệt import ngoài). Test chữ phủ 5 file.
+- SPR-04 vệ sinh (RQ-015): `ci.yml` chạy một lần mỗi sự kiện (`push` chỉ trên `main` và tag `v*`, cộng `pull_request` và chạy tay); `cases.json` có `status: evaluated`; test vệ sinh chữ quét file git theo dõi; bỏ câu cũ về remote ở tài liệu cài.
+
 ## 0.2.0
 
 Chưa phát hành.
